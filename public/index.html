@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Metais & Pedras Preciosas</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: Arial, sans-serif; background: #1a1a2e; color: #e0e0e0; min-height: 100vh; }
+        
+        .login-container {
+            display: flex; align-items: center; justify-content: center;
+            min-height: 100vh; padding: 20px;
+        }
+        .login-card {
+            background: #16213e; padding: 40px; border-radius: 15px;
+            border: 1px solid #c9a84c; width: 100%; max-width: 400px;
+        }
+        .login-card h1 { color: #c9a84c; text-align: center; margin-bottom: 5px; }
+        .login-card p { text-align: center; color: #a0a0a0; margin-bottom: 25px; font-size: 14px; }
+        
+        .form-group { margin-bottom: 15px; }
+        .form-group label { display: block; margin-bottom: 5px; color: #c9a84c; font-weight: bold; }
+        input, select, textarea {
+            width: 100%; padding: 12px; border: 1px solid #c9a84c;
+            border-radius: 8px; background: #1a1a2e; color: #e0e0e0; font-size: 14px;
+        }
+        button {
+            width: 100%; padding: 14px; background: #c9a84c; color: #1a1a2e;
+            border: none; border-radius: 8px; font-size: 16px; font-weight: bold; cursor: pointer;
+        }
+        button:hover { background: #b8960f; }
+        
+        .header {
+            background: #16213e; padding: 15px 20px; display: flex;
+            justify-content: space-between; align-items: center; border-bottom: 1px solid #c9a84c;
+        }
+        .header h2 { color: #c9a84c; }
+        
+        .nav-bar {
+            position: fixed; bottom: 0; left: 0; right: 0;
+            background: #16213e; display: flex; justify-content: space-around;
+            padding: 10px; border-top: 1px solid #c9a84c;
+        }
+        .nav-item {
+            color: #a0a0a0; cursor: pointer; padding: 8px 15px;
+            border-radius: 8px; text-align: center; font-size: 12px;
+        }
+        .nav-item.active { color: #c9a84c; background: rgba(201,168,76,0.1); }
+        
+        .main-content { padding: 20px; padding-bottom: 80px; max-width: 1200px; margin: 0 auto; }
+        .page { display: none; }
+        .page.active { display: block; }
+        
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px; margin-bottom: 20px; }
+        .stat-card {
+            background: #16213e; padding: 20px; border-radius: 12px;
+            border: 1px solid rgba(201,168,76,0.3); text-align: center;
+        }
+        .stat-value { font-size: 28px; font-weight: bold; color: #c9a84c; }
+        .stat-label { font-size: 12px; color: #a0a0a0; margin-top: 5px; }
+        
+        .card { background: #16213e; border-radius: 12px; padding: 20px; margin-bottom: 15px; border: 1px solid rgba(201,168,76,0.2); }
+        .card h3 { color: #c9a84c; margin-bottom: 15px; }
+        
+        table { width: 100%; border-collapse: collapse; }
+        th, td { padding: 10px; text-align: left; border-bottom: 1px solid rgba(255,255,255,0.1); font-size: 14px; }
+        th { color: #c9a84c; }
+        
+        .badge { padding: 4px 10px; border-radius: 15px; font-size: 12px; }
+        .badge-purchase { background: rgba(76,175,80,0.2); color: #4caf50; }
+        .badge-sale { background: rgba(244,67,54,0.2); color: #f44336; }
+        
+        .btn { padding: 8px 16px; border-radius: 6px; border: none; cursor: pointer; font-size: 13px; margin: 2px; }
+        .btn-primary { background: #c9a84c; color: #1a1a2e; }
+        .btn-danger { background: #f44336; color: white; }
+        .btn-sm { padding: 5px 10px; font-size: 12px; }
+        
+        .modal {
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.8); z-index: 1000; align-items: center; justify-content: center;
+        }
+        .modal.active { display: flex; }
+        .modal-content {
+            background: #16213e; border-radius: 15px; padding: 25px;
+            max-width: 500px; width: 90%; max-height: 90vh; overflow-y: auto;
+        }
+        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .close-btn { background: none; border: none; color: #e0e0e0; font-size: 24px; cursor: pointer; }
+    </style>
+</head>
+<body>
+    <div id="loginScreen" class="login-container">
+        <div class="login-card">
+            <h1>💎 Metais & Pedras</h1>
+            <p>Sistema Profissional de Gestão</p>
+            <form id="loginForm">
+                <div class="form-group">
+                    <label>Email</label>
+                    <input type="email" id="loginEmail" value="admin@metaispreciosos.pt" required>
+                </div>
+                <div class="form-group">
+                    <label>Senha</label>
+                    <input type="password" id="loginPassword" value="Admin123!" required>
+                </div>
+                <button type="submit">Entrar</button>
+            </form>
+        </div>
+    </div>
+
+    <div id="appScreen" style="display:none;">
+        <div class="header">
+            <h2>💎 Metais & Pedras</h2>
+            <div>
+                <button class="btn btn-primary btn-sm" onclick="showModal('transactionModal')">+ Nova Transação</button>
+                <button class="btn btn-danger btn-sm" onclick="logout()">Sair</button>
+            </div>
+        </div>
+        
+        <div class="main-content">
+            <div id="dashboardPage" class="page active">
+                <div class="stats-grid" id="dashboardStats"></div>
+                <div class="card">
+                    <h3>🕐 Últimas Transações</h3>
+                    <table id="recentTable"><thead><tr><th>Código</th><th>Material</th><th>Tipo</th><th>Valor</th><th>Data</th></tr></thead><tbody></tbody></table>
+                </div>
+            </div>
+            
+            <div id="transactionsPage" class="page">
+                <div class="card">
+                    <h3>📋 Histórico de Transações</h3>
+                    <table id="transactionsTable"><thead><tr><th>Código</th><th>Material</th><th>Tipo</th><th>Peso</th><th>Preço/g</th><th>Total</th><th>Cliente</th><th>Data</th></tr></thead><tbody></tbody></table>
+                </div>
+            </div>
+            
+            <div id="stockPage" class="page">
+                <div class="card">
+                    <h3>💎 Stock de Materiais</h3>
+                    <table id="stockTable"><thead><tr><th>Código</th><th>Nome</th><th>Tipo</th><th>Gramas</th><th>Quilates</th></tr></thead><tbody></tbody></table>
+                </div>
+            </div>
+            
+            <div id="clientsPage" class="page">
+                <div class="card">
+                    <h3>👥 Clientes</h3>
+                    <button class="btn btn-primary btn-sm" onclick="showModal('clientModal')" style="margin-bottom:15px;">+ Novo Cliente</button>
+                    <table id="clientsTable"><thead><tr><th>Nome</th><th>Email</th><th>Telefone</th><th>Total Compras</th></tr></thead><tbody></tbody></table>
+                </div>
+            </div>
+        </div>
+        
+        <div class="nav-bar">
+            <div class="nav-item active" onclick="showPage('dashboard')">📊 Dashboard</div>
+            <div class="nav-item" onclick="showPage('transactions')">📋 Transações</div>
+            <div class="nav-item" onclick="showPage('stock')">💎 Stock</div>
+            <div class="nav-item" onclick="showPage('clients')">👥 Clientes</div>
+        </div>
+    </div>
+
+    <div id="transactionModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Nova Transação</h3>
+                <button class="close-btn" onclick="closeModal('transactionModal')">✕</button>
+            </div>
+            <form id="transactionForm">
+                <div class="form-group">
+                    <label>Material *</label>
+                    <select id="materialId" required></select>
+                </div>
+                <div class="form-group">
+                    <label>Tipo *</label>
+                    <select id="type" required>
+                        <option value="purchase">Compra</option>
+                        <option value="sale">Venda</option>
+                    </select>
+                </div>
+                <div class="form-group"><label>Peso (gramas)</label><input type="number" id="weightGrams" step="0.001" placeholder="0.000"></div>
+                <div class="form-group"><label>Peso (quilates)</label><input type="number" id="weightCarats" step="0.001" placeholder="0.000"></div>
+                <div class="form-group"><label>Preço por Unidade (€) *</label><input type="number" id="pricePerUnit" step="0.01" required></div>
+                <div class="form-group"><label>Preço Total (€)</label><input type="number" id="totalPrice" step="0.01" readonly></div>
+                <div class="form-group"><label>Qualidade</label><select id="quality"><option value="">Selecione</option><option value="24K">24K (999.9)</option><option value="22K">22K (916)</option><option value="18K">18K (750)</option><option value="14K">14K (585)</option><option value="AAA">AAA (Gema)</option><option value="AA">AA (Gema)</option><option value="A">A (Gema)</option></select></div>
+                <div class="form-group"><label>Origem</label><input type="text" id="origin" placeholder="Ex: Brasil, África do Sul"></div>
+                <div class="form-group"><label>Cliente</label><input type="text" id="clientName" placeholder="Nome do cliente"></div>
+                <div class="form-group"><label>Método de Pagamento</label><select id="paymentMethod"><option value="cash">Dinheiro</option><option value="card">Cartão</option><option value="transfer">Transferência</option><option value="mbway">MB WAY</option></select></div>
+                <div class="form-group"><label>Data *</label><input type="date" id="transactionDate" required></div>
+                <div class="form-group"><label>Observações</label><textarea id="notes" rows="2"></textarea></div>
+                <button type="submit">Registar Transação</button>
+            </form>
+        </div>
+    </div>
+
+    <div id="clientModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Novo Cliente</h3>
+                <button class="close-btn" onclick="closeModal('clientModal')">✕</button>
+            </div>
+            <form id="clientForm">
+                <div class="form-group"><label>Nome *</label><input type="text" id="newClientName" required></div>
+                <div class="form-group"><label>Email</label><input type="email" id="newClientEmail"></div>
+                <div class="form-group"><label>Telefone</label><input type="text" id="newClientPhone"></div>
+                <div class="form-group"><label>Morada</label><input type="text" id="newClientAddress"></div>
+                <div class="form-group"><label>NIF</label><input type="text" id="newClientNif"></div>
+                <button type="submit">Guardar Cliente</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        const API = '';
+        let token = localStorage.getItem('token');
+
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const res = await fetch(API + '/api/auth/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    email: document.getElementById('loginEmail').value,
+                    password: document.getElementById('loginPassword').value
+                })
+            });
+            const data = await res.json();
+            if (res.ok) {
+                token = data.token;
+                localStorage.setItem('token', token);
+                document.getElementById('loginScreen').style.display = 'none';
+                document.getElementById('appScreen').style.display = 'block';
+                loadDashboard();
+            } else {
+                alert(data.error || 'Erro no login');
+            }
+        });
+
+        function logout() {
+            localStorage.removeItem('token');
+            token = null;
+            document.getElementById('appScreen').style.display = 'none';
+            document.getElementById('loginScreen').style.display = 'flex';
+        }
+
+        function showPage(page) {
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+            document.getElementById(page + 'Page').classList.add('active');
+            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+            event.target.classList.add('active');
+            if (page === 'dashboard') loadDashboard();
+            if (page === 'transactions') loadTransactions();
+            if (page === 'stock') loadStock();
+            if (page === 'clients') loadClients();
+        }
+
+        async function loadDashboard() {
+            const res = await fetch(API + '/api/dashboard', { headers: { 'Authorization': 'Bearer ' + token } });
+            const data = await res.json();
+            document.getElementById('dashboardStats').innerHTML = `
+                <div class="stat-card"><div class="stat-value">${data.totalItems || 0}</div><div class="stat-label">Itens em Stock</div></div>
+                <div class="stat-card"><div class="stat-value">€${(data.monthPurchases || 0).toFixed(2)}</div><div class="stat-label">Compras do Mês</div></div>
+                <div class="stat-card"><div class="stat-value">€${(data.monthSales || 0).toFixed(2)}</div><div class="stat-label">Vendas do Mês</div></div>
+            `;
+            const tbody = document.querySelector('#recentTable tbody');
+            tbody.innerHTML = (data.recentTransactions || []).map(t => `
+                <tr>
+                    <td>${t.code}</td><td>${t.material_name}</td>
+                    <td><span class="badge badge-${t.type === 'purchase' ? 'purchase' : 'sale'}">${t.type === 'purchase' ? 'Compra' : 'Venda'}</span></td>
+                    <td>€${parseFloat(t.total_price).toFixed(2)}</td>
+                    <td>${new Date(t.transaction_date).toLocaleDateString('pt-PT')}</td>
+                </tr>`).join('') || '<tr><td colspan="5">Sem transações</td></tr>';
+        }
+
+        async function loadTransactions() {
+            const res = await fetch(API + '/api/transactions', { headers: { 'Authorization': 'Bearer ' + token } });
+            const data = await res.json();
+            const tbody = document.querySelector('#transactionsTable tbody');
+            tbody.innerHTML = data.map(t => `
+                <tr>
+                    <td>${t.code}</td><td>${t.material_name}</td>
+                    <td><span class="badge badge-${t.type === 'purchase' ? 'purchase' : 'sale'}">${t.type === 'purchase' ? 'Compra' : 'Venda'}</span></td>
+                    <td>${t.weight_grams || t.weight_carats || '-'}</td>
+                    <td>€${parseFloat(t.price_per_unit || 0).toFixed(2)}</td>
+                    <td>€${parseFloat(t.total_price).toFixed(2)}</td>
+                    <td>${t.client_name || '-'}</td>
+                    <td>${new Date(t.transaction_date).toLocaleDateString('pt-PT')}</td>
+                </tr>`).join('') || '<tr><td colspan="8">Sem transações</td></tr>';
+        }
+
+        async function loadStock() {
+            const res = await fetch(API + '/api/materials', { headers: { 'Authorization': 'Bearer ' + token } });
+            const data = await res.json();
+            const tbody = document.querySelector('#stockTable tbody');
+            tbody.innerHTML = data.map(m => `
+                <tr>
+                    <td>${m.code || '-'}</td><td>${m.name}</td><td>${m.type}</td>
+                    <td>${m.stock_grams || 0}g</td><td>${m.stock_carats || 0}ct</td>
+                </tr>`).join('') || '<tr><td colspan="5">Sem materiais</td></tr>';
+        }
+
+        async function loadClients() {
+            const res = await fetch(API + '/api/clients', { headers: { 'Authorization': 'Bearer ' + token } });
+            const data = await res.json();
+            const tbody = document.querySelector('#clientsTable tbody');
+            tbody.innerHTML = data.map(c => `
+                <tr>
+                    <td>${c.name}</td><td>${c.email || '-'}</td><td>${c.phone || '-'}</td>
+                    <td>€${parseFloat(c.total_purchases || 0).toFixed(2)}</td>
+                </tr>`).join('') || '<tr><td colspan="4">Sem clientes</td></tr>';
+        }
+
+        async function loadMaterialsForSelect() {
+            const res = await fetch(API + '/api/materials', { headers: { 'Authorization': 'Bearer ' + token } });
+            const data = await res.json();
+            const select = document.getElementById('materialId');
+            select.innerHTML = '<option value="">Selecione...</option>' + data.map(m => `<option value="${m.id}">${m.name} (${m.code})</option>`).join('');
+        }
+
+        function showModal(id) {
+            document.getElementById(id).classList.add('active');
+            if (id === 'transactionModal') {
+                loadMaterialsForSelect();
+                document.getElementById('transactionDate').value = new Date().toISOString().split('T')[0];
+            }
+        }
+
+        function closeModal(id) { document.getElementById(id).classList.remove('active'); }
+
+        document.getElementById('weightGrams').addEventListener('input', calcTotal);
+        document.getElementById('weightCarats').addEventListener('input', calcTotal);
+        document.getElementById('pricePerUnit').addEventListener('input', calcTotal);
+
+        function calcTotal() {
+            const g = parseFloat(document.getElementById('weightGrams').value) || 0;
+            const ct = parseFloat(document.getElementById('weightCarats').value) || 0;
+            const price = parseFloat(document.getElementById('pricePerUnit').value) || 0;
+            document.getElementById('totalPrice').value = ((g + ct * 0.2) * price).toFixed(2);
+        }
+
+        document.getElementById('transactionForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const body = {
+                material_id: document.getElementById('materialId').value,
+                type: document.getElementById('type').value,
+                weight_grams: parseFloat(document.getElementById('weightGrams').value) || 0,
+                weight_carats: parseFloat(document.getElementById('weightCarats').value) || 0,
+                price_per_unit: parseFloat(document.getElementById('pricePerUnit').value),
+                total_price: parseFloat(document.getElementById('totalPrice').value),
+                quality: document.getElementById('quality').value,
+                origin: document.getElementById('origin').value,
+                client_name: document.getElementById('clientName').value,
+                payment_method: document.getElementById('paymentMethod').value,
+                transaction_date: document.getElementById('transactionDate').value,
+                notes: document.getElementById('notes').value
+            };
+            const res = await fetch(API + '/api/transactions', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+                body: JSON.stringify(body)
+            });
+            if (res.ok) {
+                alert('Transação registada! ✅');
+                closeModal('transactionModal');
+                loadDashboard();
+            } else {
+                const err = await res.json();
+                alert('Erro: ' + err.error);
+            }
+        });
+
+        document.getElementById('clientForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const body = {
+                name: document.getElementById('newClientName').value,
+                email: document.getElementById('newClientEmail').value,
+                phone: document.getElementById('newClientPhone').value,
+                address: document.getElementById('newClientAddress').value,
+                nif: document.getElementById('newClientNif').value
+            };
+            const res = await fetch(API + '/api/clients', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+                body: JSON.stringify(body)
+            });
+            if (res.ok) {
+                alert('Cliente guardado! ✅');
+                closeModal('clientModal');
+                loadClients();
+            } else {
+                alert('Erro ao guardar cliente');
+            }
+        });
+
+        if (token) {
+            document.getElementById('loginScreen').style.display = 'none';
+            document.getElementById('appScreen').style.display = 'block';
+            loadDashboard();
+        }
+    </script>
+</body>
+</html>
