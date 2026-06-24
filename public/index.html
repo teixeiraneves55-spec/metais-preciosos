@@ -134,11 +134,15 @@
             </div>
             
             <div id="stockPage" class="page">
-                <div class="card">
-                    <h3>💎 Stock de Materiais</h3>
-                    <table id="stockTable"><thead><tr><th>Código</th><th>Nome</th><th>Tipo</th><th>Gramas</th><th>Quilates</th></tr></thead><tbody></tbody></table>
-                </div>
-            </div>
+    <div class="card">
+        <h3>💎 Stock de Materiais</h3>
+        <div style="margin-bottom:15px;">
+            <button class="btn btn-primary btn-sm" onclick="seedMaterials()">📦 Criar Materiais Padrão</button>
+            <button class="btn btn-sm" style="background:#2196f3;color:white;" onclick="showAddMaterial()">+ Novo Material</button>
+        </div>
+        <table id="stockTable"><thead><tr><th>Código</th><th>Nome</th><th>Tipo</th><th>Gramas</th><th>Quilates</th><th>Ações</th></tr></thead><tbody></tbody></table>
+    </div>
+</div>
             
             <div id="clientsPage" class="page">
                 <div class="card">
