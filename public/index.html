@@ -212,6 +212,32 @@
     </div>
 
     <script>
+       async function seedMaterials() {
+    const res = await fetch(API + '/api/materials/seed', {
+        method: 'POST',
+        headers: { 'Authorization': 'Bearer ' + token }
+    });
+    if (res.ok) {
+        alert('Materiais criados com sucesso! ✅');
+        loadStock();
+    }
+}
+
+function showAddMaterial() {
+    const name = prompt('Nome do material:');
+    if (!name) return;
+    const code = prompt('Código (ex: AU24K):');
+    if (!code) return;
+    const type = prompt('Tipo (metal ou gem):');
+    const subtype = prompt('Subtipo (ex: Ouro, Diamante):');
+    const unit = prompt('Unidade (g ou ct):');
+    
+    fetch(API + '/api/materials', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+        body: JSON.stringify({ code, name, type, subtype, unit })
+    }).then(() => loadStock());
+}
         const API = '';
         let token = localStorage.getItem('token');
 
