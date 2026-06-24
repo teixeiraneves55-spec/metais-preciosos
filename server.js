@@ -281,6 +281,42 @@ app.get('/', (req, res) => {
 });
 
 // Iniciar servidor
+// Adicionar materiais padrão
+app.post('/api/materials/seed', authMiddleware, async (req, res) => {
+  try {
+    const defaultMaterials = [
+      { code: 'AU24K', name: 'Ouro 24K', type: 'metal', subtype: 'Ouro', unit: 'g' },
+      { code: 'AU22K', name: 'Ouro 22K', type: 'metal', subtype: 'Ouro', unit: 'g' },
+      { code: 'AU20K', name: 'Ouro 20K', type: 'metal', subtype: 'Ouro', unit: 'g' },
+      { code: 'AU18K', name: 'Ouro 18K', type: 'metal', subtype: 'Ouro', unit: 'g' },
+      { code: 'SAF01', name: 'Safira Azul', type: 'gem', subtype: 'Safira', unit: 'ct' },
+      { code: 'SAF02', name: 'Safira Rosa', type: 'gem', subtype: 'Safira', unit: 'ct' },
+      { code: 'DIA01', name: 'Diamante 1ct', type: 'gem', subtype: 'Diamante', unit: 'ct' },
+      { code: 'DIA02', name: 'Diamante 0.5ct', type: 'gem', subtype: 'Diamante', unit: 'ct' }
+    ];
+    
+    for (const m of defaultMaterials) {
+      await pool.query(
+        'INSERT INTO materials (code, name, type, subtype, unit) VALUES ($1, $2, $3, $4, $5) ON CONFLICT (code) DO NOTHING',
+        [m.code, m.name, m.type, m.subtype, m.unit]
+      );
+    }
+    
+    res.json({ message: 'Materiais criados com sucesso!' });
+  } catch (error) {
+    res.status(500).json({ error: 'Erro ao criar materiais' });
+  }
+});
+
+// Apagar material
+app.delete('/api/materials/:id', authMiddleware, async (req, res) => {
+  try {
+    await pool.query('DELETE FROM materials WHERE id = $1', [req.params.id]);
+    res.json({ message: 'Material removido' });
+  } catch (error) {
+    res.status(500).json({ error: 'Erro ao remover material' });
+  }
+});
 initDB().then(() => {
   app.listen(PORT, () => {
     console.log(`Servidor a correr na porta ${PORT}`);
