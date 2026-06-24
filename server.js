@@ -322,3 +322,16 @@ initDB().then(() => {
     console.log(`Servidor a correr na porta ${PORT}`);
   });
 });
+// Criar material
+app.post('/api/materials', authMiddleware, async (req, res) => {
+  try {
+    const { code, name, type, subtype, unit } = req.body;
+    const result = await pool.query(
+      'INSERT INTO materials (code, name, type, subtype, unit) VALUES ($1, $2, $3, $4, $5) RETURNING *',
+      [code, name, type, subtype, unit]
+    );
+    res.status(201).json(result.rows[0]);
+  } catch (error) {
+    res.status(500).json({ error: 'Erro ao criar material' });
+  }
+});
