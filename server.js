@@ -466,6 +466,61 @@ app.delete('/api/transactions/:id', authMiddleware, async (req, res) => {
 });
 
 // Tesouraria
+// API de preços de metais em tempo real
+const https = require('https');
+
+async function fetchMetalPrices() {
+  return new Promise((resolve) => {
+    const options = {
+      hostname: 'api.metalpriceapi.com',
+      path: '/v1/latest?api_key=demo&base=EUR&currencies=XAU,XAG,XPT',
+      method: 'GET'
+    };
+    
+    https.get(options, (res) => {
+      let data = '';
+      res.on('data', chunk => data += chunk);
+      res.on('end', () => {
+        try {
+          resolve(JSON.parse(data));
+        } catch(e) {
+          resolve(null);
+        }
+      });
+    }).on('error', () => resolve(null));
+  });
+}
+
+app.get('/api/market-prices', authMiddleware, async (req, res) => {
+  try {
+    const prices = await fetchMetalPrices();
+    const ounceToGram = 31.1035;
+    
+    const marketPrices = {
+      gold: prices?.rates?.XAU ? (1 / prices.rates.XAU / ounceToGram) : null,
+      silver: prices?.rates?.XAG ? (1 / prices.rates.XAG / ounceToGram) : null,
+      platinum: prices?.rates?.XPT ? (1 / prices.rates.XPT / ounceToGram) : null,
+      updated: new Date().toISOString()
+    };
+    
+    if (marketPrices.gold) {
+      await pool.query("UPDATE materials SET market_price_eur = ROUND($1::numeric, 2) WHERE subtype = 'Ouro' AND code = 'AU24K'", [marketPrices.gold]);
+      await pool.query("UPDATE materials SET market_price_eur = ROUND(($1 * 0.916)::numeric, 2) WHERE subtype = 'Ouro' AND code = 'AU22K'", [marketPrices.gold]);
+      await pool.query("UPDATE materials SET market_price_eur = ROUND(($1 * 0.833)::numeric, 2) WHERE subtype = 'Ouro' AND code = 'AU20K'", [marketPrices.gold]);
+      await pool.query("UPDATE materials SET market_price_eur = ROUND(($1 * 0.75)::numeric, 2) WHERE subtype = 'Ouro' AND code = 'AU18K'", [marketPrices.gold]);
+    }
+    if (marketPrices.silver) {
+      await pool.query("UPDATE materials SET market_price_eur = ROUND($1::numeric, 2) WHERE subtype = 'Prata'", [marketPrices.silver]);
+    }
+    if (marketPrices.platinum) {
+      await pool.query("UPDATE materials SET market_price_eur = ROUND($1::numeric, 2) WHERE subtype = 'Platina'", [marketPrices.platinum]);
+    }
+    
+    res.json(marketPrices);
+  } catch (error) {
+    res.status(500).json({ error: 'Erro ao obter preços' });
+  }
+});
 app.get('/api/treasury', authMiddleware, async (req, res) => {
   try {
     const result = await pool.query('SELECT * FROM treasury ORDER BY date DESC, created_at DESC');
