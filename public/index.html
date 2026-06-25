@@ -70,6 +70,8 @@
             <h2>💎 Metais & Pedras</h2>
             <div style="display:flex;gap:8px;flex-wrap:wrap;">
                 <button class="btn btn-primary btn-sm" onclick="showModal('transactionModal')">+ Transação</button>
+                <button class="btn btn-primary btn-sm" onclick="showModal('transactionModal')">+ Transação</button>
+<button class="btn btn-sm" style="background:#ff9800;color:white;" onclick="updateMarketPrices()">📡 Cotações</button>
                 <button class="btn btn-info btn-sm" onclick="showPage('treasury')">🏦 Tesouraria</button>
                 <button class="btn btn-danger btn-sm" onclick="logout()">Sair</button>
             </div>
@@ -452,7 +454,27 @@
             });
             if (res.ok) { alert('Cliente guardado! ✅'); closeModal('clientModal'); loadClients(); }
         });
+async function updateMarketPrices() {
+    const btn = event.target;
+    btn.textContent = '⏳...';
+    btn.disabled = true;
+    try {
+        const res = await fetch(API + '/api/market-prices', { headers: { 'Authorization': 'Bearer ' + token } });
+        const data = await res.json();
+        if (res.ok && data.gold) {
+            alert('✅ Cotações atualizadas!\n\nOuro 24K: €' + data.gold.toFixed(2) + '/g\nPrata: €' + (data.silver?.toFixed(2) || 'N/D') + '/g\nPlatina: €' + (data.platinum?.toFixed(2) || 'N/D') + '/g');
+            loadStock();
+        } else {
+            alert('⚠️ Erro na API. Tente novamente.');
+        }
+    } catch(e) {
+        alert('Erro de conexão');
+    }
+    btn.textContent = '📡 Cotações';
+    btn.disabled = false;
+}
 
+if (token) {
         if (token) {
             document.getElementById('loginScreen').style.display = 'none';
             document.getElementById('appScreen').style.display = 'block';
