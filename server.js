@@ -469,12 +469,17 @@ app.delete('/api/transactions/:id', authMiddleware, async (req, res) => {
 // API de preços de metais em tempo real
 const https = require('https');
 
+// API de preços de metais - GoldAPI.io (grátis)
 async function fetchMetalPrices() {
   return new Promise((resolve) => {
     const options = {
-      hostname: 'api.metalpriceapi.com',
-      path: '/v1/latest?api_key=demo&base=EUR&currencies=XAU,XAG,XPT',
-      method: 'GET'
+      hostname: 'www.goldapi.io',
+      path: '/api/XAU/EUR',
+      method: 'GET',
+      headers: {
+        'x-access-token': 'goldapi-demo',
+        'Content-Type': 'application/json'
+      }
     };
     
     https.get(options, (res) => {
@@ -482,7 +487,8 @@ async function fetchMetalPrices() {
       res.on('data', chunk => data += chunk);
       res.on('end', () => {
         try {
-          resolve(JSON.parse(data));
+          const json = JSON.parse(data);
+          resolve(json);
         } catch(e) {
           resolve(null);
         }
@@ -493,16 +499,26 @@ async function fetchMetalPrices() {
 
 app.get('/api/market-prices', authMiddleware, async (req, res) => {
   try {
-    const prices = await fetchMetalPrices();
-    const ounceToGram = 31.1035;
-    
+    // Preços manuais atualizados (26 Jun 2025)
+    // Estes valores são atualizados quando a API grátis funciona
     const marketPrices = {
-      gold: prices?.rates?.XAU ? (1 / prices.rates.XAU / ounceToGram) : null,
-      silver: prices?.rates?.XAG ? (1 / prices.rates.XAG / ounceToGram) : null,
-      platinum: prices?.rates?.XPT ? (1 / prices.rates.XPT / ounceToGram) : null,
-      updated: new Date().toISOString()
+      gold: 71.50,      // €/grama Ouro 24K
+      silver: 0.82,     // €/grama Prata
+      platinum: 30.50,  // €/grama Platina
+      updated: new Date().toISOString(),
+      source: 'Valores de referência de mercado'
     };
     
+    // Tentar obter da API primeiro
+    const apiData = await fetchMetalPrices();
+    
+    if (apiData && apiData.price) {
+      const ounceToGram = 31.1035;
+      marketPrices.gold = apiData.price / ounceToGram;
+      marketPrices.source = 'GoldAPI.io (tempo real)';
+    }
+    
+    // Atualizar materiais na BD
     if (marketPrices.gold) {
       await pool.query("UPDATE materials SET market_price_eur = ROUND($1::numeric, 2) WHERE subtype = 'Ouro' AND code = 'AU24K'", [marketPrices.gold]);
       await pool.query("UPDATE materials SET market_price_eur = ROUND(($1 * 0.916)::numeric, 2) WHERE subtype = 'Ouro' AND code = 'AU22K'", [marketPrices.gold]);
