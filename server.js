@@ -36,7 +36,7 @@ async function initDB() {
       const hashedPassword = await bcrypt.hash(adminPassword, 10);
       await client.query('INSERT INTO users (name, email, password, role) VALUES ($1, $2, $3, $4)', ['Administrador', adminEmail, hashedPassword, 'admin']);
     }
-    console.log('Base de dados inicializada');
+    console.log('DB ok');
   } finally { client.release(); }
 }
 
@@ -48,7 +48,7 @@ app.post('/api/auth/login', async (req, res) => {
     if (!user) return res.status(401).json({ error: 'Email ou senha incorretos' });
     const validPassword = await bcrypt.compare(password, user.password);
     if (!validPassword) return res.status(401).json({ error: 'Email ou senha incorretos' });
-    const token = jwt.sign({ id: user.id, email: user.email, role: user.role }, process.env.JWT_SECRET || 'segredo123', { expiresIn: '24h' });
+    const token = jwt.sign({ id: user.id, email: user.email, role: user.role }, process.env.JWT_SECRET || 'segredo123', { expiresIn: '7d' });
     res.json({ token, user: { id: user.id, name: user.name, email: user.email, role: user.role } });
   } catch (error) { res.status(500).json({ error: 'Erro no servidor' }); }
 });
@@ -67,39 +67,39 @@ app.get('/api/exchange-rates', authMiddleware, (req, res) => { res.json(exchange
 
 app.get('/api/dashboard', authMiddleware, async (req, res) => {
   try {
-    const stockResult = await pool.query('SELECT COUNT(*) as total FROM materials');
-    const monthStart = new Date(); monthStart.setDate(1); monthStart.setHours(0,0,0,0);
-    const monthResult = await pool.query("SELECT type, SUM(total_price_eur) as total FROM transactions WHERE transaction_date >= $1 GROUP BY type", [monthStart.toISOString().split('T')[0]]);
-    const recentResult = await pool.query("SELECT t.*, m.name as material_name FROM transactions t JOIN materials m ON t.material_id = m.id ORDER BY t.created_at DESC LIMIT 10");
-    const treasuryResult = await pool.query("SELECT type, SUM(amount_eur) as total FROM treasury WHERE date >= $1 GROUP BY type", [monthStart.toISOString().split('T')[0]]);
+    const sr = await pool.query('SELECT COUNT(*) as total FROM materials');
+    const ms = new Date(); ms.setDate(1); ms.setHours(0,0,0,0);
+    const mr = await pool.query("SELECT type, SUM(total_price_eur) as total FROM transactions WHERE transaction_date >= $1 GROUP BY type", [ms.toISOString().split('T')[0]]);
+    const rr = await pool.query("SELECT t.*, m.name as material_name FROM transactions t JOIN materials m ON t.material_id = m.id ORDER BY t.created_at DESC LIMIT 10");
+    const tr = await pool.query("SELECT type, SUM(amount_eur) as total FROM treasury WHERE date >= $1 GROUP BY type", [ms.toISOString().split('T')[0]]);
     res.json({
-      totalItems: stockResult.rows[0].total,
-      monthPurchases: monthResult.rows.find(r => r.type === 'purchase')?.total || 0,
-      monthSales: monthResult.rows.find(r => r.type === 'sale')?.total || 0,
-      treasuryBalance: (treasuryResult.rows.find(r => r.type === 'income')?.total || 0) - (treasuryResult.rows.find(r => r.type === 'expense')?.total || 0),
-      recentTransactions: recentResult.rows
+      totalItems: sr.rows[0].total,
+      monthPurchases: mr.rows.find(r => r.type === 'purchase')?.total || 0,
+      monthSales: mr.rows.find(r => r.type === 'sale')?.total || 0,
+      treasuryBalance: (tr.rows.find(r => r.type === 'income')?.total || 0) - (tr.rows.find(r => r.type === 'expense')?.total || 0),
+      recentTransactions: rr.rows
     });
-  } catch (error) { res.status(500).json({ error: 'Erro no servidor' }); }
+  } catch (error) { res.status(500).json({ error: 'Erro' }); }
 });
 
 app.get('/api/materials', authMiddleware, async (req, res) => {
-  try { const result = await pool.query('SELECT * FROM materials ORDER BY name'); res.json(result.rows); }
-  catch (error) { res.status(500).json({ error: 'Erro' }); }
+  try { const r = await pool.query('SELECT * FROM materials ORDER BY name'); res.json(r.rows); }
+  catch (e) { res.status(500).json({ error: 'Erro' }); }
 });
 
 app.post('/api/materials', authMiddleware, async (req, res) => {
   try {
     const { code, name, type, subtype, unit, market_price_eur } = req.body;
-    const result = await pool.query('INSERT INTO materials (code, name, type, subtype, unit, market_price_eur) VALUES ($1,$2,$3,$4,$5,$6) RETURNING *', [code, name, type, subtype, unit, market_price_eur || 0]);
-    res.status(201).json(result.rows[0]);
-  } catch (error) { res.status(500).json({ error: 'Erro ao criar material' }); }
+    const r = await pool.query('INSERT INTO materials (code, name, type, subtype, unit, market_price_eur) VALUES ($1,$2,$3,$4,$5,$6) RETURNING *', [code, name, type, subtype, unit, market_price_eur || 0]);
+    res.status(201).json(r.rows[0]);
+  } catch (e) { res.status(500).json({ error: 'Erro' }); }
 });
 
 app.put('/api/materials/:id/price', authMiddleware, async (req, res) => {
   try {
     await pool.query('UPDATE materials SET market_price_eur = $1 WHERE id = $2', [req.body.market_price_eur, req.params.id]);
-    res.json({ message: 'Preço atualizado' });
-  } catch (error) { res.status(500).json({ error: 'Erro' }); }
+    res.json({ message: 'OK' });
+  } catch (e) { res.status(500).json({ error: 'Erro' }); }
 });
 
 app.post('/api/materials/seed', authMiddleware, async (req, res) => {
@@ -117,23 +117,23 @@ app.post('/api/materials/seed', authMiddleware, async (req, res) => {
     for (const m of mats) {
       await pool.query('INSERT INTO materials (code, name, type, subtype, unit, market_price_eur) VALUES ($1,$2,$3,$4,$5,$6) ON CONFLICT (code) DO UPDATE SET market_price_eur = $6', [m.code, m.name, m.type, m.subtype, m.unit, m.price]);
     }
-    res.json({ message: 'Materiais criados!' });
-  } catch (error) { res.status(500).json({ error: 'Erro' }); }
+    res.json({ message: 'OK' });
+  } catch (e) { res.status(500).json({ error: 'Erro' }); }
 });
 
 app.get('/api/transactions', authMiddleware, async (req, res) => {
   try {
-    const result = await pool.query("SELECT t.*, m.name as material_name FROM transactions t JOIN materials m ON t.material_id = m.id ORDER BY t.transaction_date DESC, t.created_at DESC");
-    res.json(result.rows);
-  } catch (error) { res.status(500).json({ error: 'Erro' }); }
+    const r = await pool.query("SELECT t.*, m.name as material_name FROM transactions t JOIN materials m ON t.material_id = m.id ORDER BY t.transaction_date DESC, t.created_at DESC");
+    res.json(r.rows);
+  } catch (e) { res.status(500).json({ error: 'Erro' }); }
 });
 
 app.get('/api/transactions/:id', authMiddleware, async (req, res) => {
   try {
-    const result = await pool.query('SELECT * FROM transactions WHERE id = $1', [req.params.id]);
-    if (result.rows.length === 0) return res.status(404).json({ error: 'Não encontrada' });
-    res.json(result.rows[0]);
-  } catch (error) { res.status(500).json({ error: 'Erro' }); }
+    const r = await pool.query('SELECT * FROM transactions WHERE id = $1', [req.params.id]);
+    if (r.rows.length === 0) return res.status(404).json({ error: 'Não encontrada' });
+    res.json(r.rows[0]);
+  } catch (e) { res.status(500).json({ error: 'Erro' }); }
 });
 
 app.post('/api/transactions', authMiddleware, async (req, res) => {
@@ -143,8 +143,8 @@ app.post('/api/transactions', authMiddleware, async (req, res) => {
     const total_price_eur = total_price / (exchangeRates[currency] || 1);
     const prefix = type === 'purchase' ? 'COMPRA' : 'VENDA';
     const dateStr = transaction_date.replace(/-/g, '');
-    const countResult = await client.query('SELECT COUNT(*) FROM transactions WHERE transaction_date = $1', [transaction_date]);
-    const code = prefix + '-' + dateStr + '-' + (parseInt(countResult.rows[0].count) + 1).toString().padStart(4, '0');
+    const cr = await client.query('SELECT COUNT(*) FROM transactions WHERE transaction_date = $1', [transaction_date]);
+    const code = prefix + '-' + dateStr + '-' + (parseInt(cr.rows[0].count) + 1).toString().padStart(4, '0');
     const lot = lot_number || 'LOTE-' + dateStr + '-' + Math.floor(Math.random() * 1000).toString().padStart(3, '0');
 
     await client.query('BEGIN');
@@ -156,12 +156,13 @@ app.post('/api/transactions', authMiddleware, async (req, res) => {
       await client.query('UPDATE materials SET stock_grams = stock_grams - $1, stock_carats = stock_carats - $2 WHERE id = $3', [weight_grams || 0, weight_carats || 0, material_id]);
     }
 
-    const treasuryType = type === 'purchase' ? 'expense' : 'income';
-    await client.query('INSERT INTO treasury (date, description, type, amount, currency, amount_eur, category, reference) VALUES ($1,$2,$3,$4,$5,$6,$7,$8)', [transaction_date, 'Transação ' + code, treasuryType, total_price, currency, total_price_eur, 'Materiais', code]);
+    const tt = type === 'purchase' ? 'expense' : 'income';
+    await client.query('INSERT INTO treasury (date, description, type, amount, currency, amount_eur, category, reference) VALUES ($1,$2,$3,$4,$5,$6,$7,$8)', [transaction_date, 'Transação ' + code, tt, total_price, currency, total_price_eur, 'Materiais', code]);
     await client.query('COMMIT');
-    res.status(201).json({ message: 'Transação registada', code, lot });
+    res.status(201).json({ message: 'OK', code, lot });
   } catch (error) {
     await client.query('ROLLBACK');
+    console.error('Erro transação:', error);
     res.status(500).json({ error: 'Erro ao registar' });
   } finally { client.release(); }
 });
@@ -187,13 +188,14 @@ app.put('/api/transactions/:id', authMiddleware, async (req, res) => {
     } else {
       await client.query('UPDATE materials SET stock_grams = stock_grams - $1, stock_carats = stock_carats - $2 WHERE id = $3', [weight_grams || 0, weight_carats || 0, material_id]);
     }
-    const treasuryType = type === 'purchase' ? 'expense' : 'income';
-    await client.query('INSERT INTO treasury (date, description, type, amount, currency, amount_eur, category, reference) VALUES ($1,$2,$3,$4,$5,$6,$7,$8)', [transaction_date, 'Transação ' + o.code + ' (editada)', treasuryType, total_price, currency, total_price_eur, 'Materiais', o.code]);
+    const tt = type === 'purchase' ? 'expense' : 'income';
+    await client.query('INSERT INTO treasury (date, description, type, amount, currency, amount_eur, category, reference) VALUES ($1,$2,$3,$4,$5,$6,$7,$8)', [transaction_date, 'Transação ' + o.code + ' (edit)', tt, total_price, currency, total_price_eur, 'Materiais', o.code]);
     await client.query('COMMIT');
-    res.json({ message: 'Transação atualizada' });
+    res.json({ message: 'OK' });
   } catch (error) {
     await client.query('ROLLBACK');
-    res.status(500).json({ error: 'Erro ao atualizar' });
+    console.error('Erro update:', error);
+    res.status(500).json({ error: 'Erro' });
   } finally { client.release(); }
 });
 
@@ -212,71 +214,42 @@ app.delete('/api/transactions/:id', authMiddleware, async (req, res) => {
     await client.query('DELETE FROM treasury WHERE reference = $1', [o.code]);
     await client.query('DELETE FROM transactions WHERE id = $1', [req.params.id]);
     await client.query('COMMIT');
-    res.json({ message: 'Transação eliminada' });
-  } catch (error) {
-    await client.query('ROLLBACK');
-    res.status(500).json({ error: 'Erro' });
-  } finally { client.release(); }
+    res.json({ message: 'OK' });
+  } catch (error) { await client.query('ROLLBACK'); res.status(500).json({ error: 'Erro' }); }
+  finally { client.release(); }
 });
 
 app.get('/api/treasury', authMiddleware, async (req, res) => {
   try {
-    const result = await pool.query('SELECT * FROM treasury ORDER BY date DESC, created_at DESC LIMIT 100');
-    const summary = await pool.query('SELECT type, SUM(amount_eur) as total FROM treasury GROUP BY type');
-    res.json({
-      transactions: result.rows,
-      income: summary.rows.find(r => r.type === 'income')?.total || 0,
-      expense: summary.rows.find(r => r.type === 'expense')?.total || 0,
-      balance: (summary.rows.find(r => r.type === 'income')?.total || 0) - (summary.rows.find(r => r.type === 'expense')?.total || 0)
-    });
-  } catch (error) { res.status(500).json({ error: 'Erro' }); }
+    const r = await pool.query('SELECT * FROM treasury ORDER BY date DESC LIMIT 100');
+    const s = await pool.query('SELECT type, SUM(amount_eur) as total FROM treasury GROUP BY type');
+    res.json({ transactions: r.rows, income: s.rows.find(r => r.type === 'income')?.total || 0, expense: s.rows.find(r => r.type === 'expense')?.total || 0, balance: (s.rows.find(r => r.type === 'income')?.total || 0) - (s.rows.find(r => r.type === 'expense')?.total || 0) });
+  } catch (e) { res.status(500).json({ error: 'Erro' }); }
 });
 
 app.get('/api/clients', authMiddleware, async (req, res) => {
-  try { const result = await pool.query('SELECT * FROM clients ORDER BY name'); res.json(result.rows); }
-  catch (error) { res.status(500).json({ error: 'Erro' }); }
+  try { const r = await pool.query('SELECT * FROM clients ORDER BY name'); res.json(r.rows); }
+  catch (e) { res.status(500).json({ error: 'Erro' }); }
 });
 
 app.post('/api/clients', authMiddleware, async (req, res) => {
   try {
     const { name, email, phone, address, nif } = req.body;
-    const result = await pool.query('INSERT INTO clients (name, email, phone, address, nif) VALUES ($1,$2,$3,$4,$5) RETURNING *', [name, email, phone, address, nif]);
-    res.status(201).json(result.rows[0]);
-  } catch (error) { res.status(500).json({ error: 'Erro ao criar cliente' }); }
+    const r = await pool.query('INSERT INTO clients (name, email, phone, address, nif) VALUES ($1,$2,$3,$4,$5) RETURNING *', [name, email, phone, address, nif]);
+    res.status(201).json(r.rows[0]);
+  } catch (e) { res.status(500).json({ error: 'Erro' }); }
 });
 
 app.get('/api/stock-value', authMiddleware, async (req, res) => {
   try {
-    const result = await pool.query('SELECT * FROM materials ORDER BY name');
-    const materials = result.rows.map(m => {
-      const totalWeight = parseFloat(m.stock_grams || 0) + parseFloat(m.stock_carats || 0) * 0.2;
-      const marketValue = totalWeight * parseFloat(m.market_price_eur || 0);
-      return { ...m, totalWeight, marketValue: marketValue.toFixed(2), estimatedValue: (marketValue * 0.8).toFixed(2) };
+    const r = await pool.query('SELECT * FROM materials ORDER BY name');
+    const materials = r.rows.map(m => {
+      const tw = parseFloat(m.stock_grams || 0) + parseFloat(m.stock_carats || 0) * 0.2;
+      const mv = tw * parseFloat(m.market_price_eur || 0);
+      return { ...m, totalWeight: tw, marketValue: mv.toFixed(2), estimatedValue: (mv * 0.8).toFixed(2) };
     });
     res.json(materials);
-  } catch (error) { res.status(500).json({ error: 'Erro' }); }
-});
-
-app.get('/api/market-prices', authMiddleware, async (req, res) => {
-  try {
-    const marketPrices = { gold: 72.00, silver: 0.85, platinum: 31.00, updated: new Date().toISOString(), source: 'Valores de referência' };
-    res.json(marketPrices);
-  } catch (error) { res.status(500).json({ error: 'Erro' }); }
-});
-
-app.post('/api/market-prices/update', authMiddleware, async (req, res) => {
-  try {
-    const { gold, silver, platinum } = req.body;
-    if (gold) {
-      await pool.query("UPDATE materials SET market_price_eur = ROUND($1::numeric, 2) WHERE subtype = 'Ouro' AND code = 'AU24K'", [gold]);
-      await pool.query("UPDATE materials SET market_price_eur = ROUND(($1 * 0.916)::numeric, 2) WHERE subtype = 'Ouro' AND code = 'AU22K'", [gold]);
-      await pool.query("UPDATE materials SET market_price_eur = ROUND(($1 * 0.833)::numeric, 2) WHERE subtype = 'Ouro' AND code = 'AU20K'", [gold]);
-      await pool.query("UPDATE materials SET market_price_eur = ROUND(($1 * 0.75)::numeric, 2) WHERE subtype = 'Ouro' AND code = 'AU18K'", [gold]);
-    }
-    if (silver) { await pool.query("UPDATE materials SET market_price_eur = ROUND($1::numeric, 2) WHERE subtype = 'Prata'", [silver]); }
-    if (platinum) { await pool.query("UPDATE materials SET market_price_eur = ROUND($1::numeric, 2) WHERE subtype = 'Platina'", [platinum]); }
-    res.json({ message: 'Preços atualizados' });
-  } catch (error) { res.status(500).json({ error: 'Erro' }); }
+  } catch (e) { res.status(500).json({ error: 'Erro' }); }
 });
 
 app.get('/', (req, res) => { res.sendFile(path.join(__dirname, 'public', 'index.html')); });
