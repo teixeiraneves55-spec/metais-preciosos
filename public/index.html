@@ -40,6 +40,7 @@
         .btn-primary{background:#c9a84c;color:#1a1a2e}
         .btn-danger{background:#f44336;color:white}
         .btn-info{background:#2196f3;color:white}
+        .btn-warning{background:#ff9800;color:white}
         .btn-sm{padding:5px 10px;font-size:11px}
         .modal{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.8);z-index:1000;align-items:center;justify-content:center}
         .modal.active{display:flex}
@@ -50,6 +51,8 @@
         .currency-selector{display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap}
         .currency-btn{padding:6px 12px;border:1px solid #c9a84c;background:transparent;color:#c9a84c;border-radius:15px;cursor:pointer;font-size:12px}
         .currency-btn.active{background:#c9a84c;color:#1a1a2e}
+        .text-green{color:#4caf50}
+        .text-red{color:#f44336}
     </style>
 </head>
 <body>
@@ -70,6 +73,7 @@
         <h2>💎 Metais & Pedras</h2>
         <div style="display:flex;gap:8px;flex-wrap:wrap">
             <button class="btn btn-primary btn-sm" onclick="showModal('transactionModal')">+ Transação</button>
+            <button class="btn btn-warning btn-sm" onclick="showPriceModal()">💲 Preços</button>
             <button class="btn btn-info btn-sm" onclick="showPage('treasury')">🏦 Tesouraria</button>
             <button class="btn btn-danger btn-sm" onclick="logout()">Sair</button>
         </div>
@@ -85,7 +89,6 @@
         <div id="stockPage" class="page">
             <div class="card"><h3>💎 Stock</h3>
                 <div style="margin-bottom:15px;display:flex;gap:8px;flex-wrap:wrap">
-                    <button class="btn btn-primary btn-sm" onclick="seedMaterials()">📦 Materiais Padrão</button>
                     <button class="btn btn-info btn-sm" onclick="showAddMaterial()">+ Material</button>
                 </div>
                 <div class="table-container"><table id="stockTable"><thead><tr><th>Código</th><th>Nome</th><th>Tipo</th><th>Gramas</th><th>Quilates</th><th>Preço Mercado</th><th>Valor (80%)</th><th>Ações</th></tr></thead><tbody></tbody></table></div>
@@ -132,8 +135,8 @@
                 <input type="hidden" id="currency" value="EUR">
             </div>
             <div class="form-group"><label>Qualidade</label><select id="quality"><option value="">Selecione</option><option value="24K">24K</option><option value="22K">22K</option><option value="20K">20K</option><option value="18K">18K</option><option value="AAA">AAA</option><option value="AA">AA</option></select></div>
-            <div class="form-group"><label>Origem</label><input type="text" id="origin" placeholder="Ex: Camarões, Brasil"></div>
-            <div class="form-group"><label>Cliente</label><input type="text" id="clientName" placeholder="Nome"></div>
+            <div class="form-group"><label>Origem</label><input type="text" id="origin" placeholder="Ex: Camarões, Brasil, África do Sul"></div>
+            <div class="form-group"><label>Cliente</label><input type="text" id="clientName" placeholder="Nome do cliente"></div>
             <div class="form-group"><label>Pagamento</label><select id="paymentMethod"><option value="cash">Dinheiro</option><option value="card">Cartão</option><option value="transfer">Transferência</option><option value="mbway">MB WAY</option></select></div>
             <div class="form-group"><label>Data *</label><input type="date" id="transactionDate" required></div>
             <div class="form-group"><label>Observações</label><textarea id="notes" rows="2"></textarea></div>
@@ -160,15 +163,39 @@
 const API='';
 let token=localStorage.getItem('token');
 
+// LOGIN
 document.getElementById('loginForm').addEventListener('submit',async(e)=>{
     e.preventDefault();
-    const res=await fetch(API+'/api/auth/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:document.getElementById('loginEmail').value,password:document.getElementById('loginPassword').value})});
-    const data=await res.json();
-    if(res.ok){token=data.token;localStorage.setItem('token',token);document.getElementById('loginScreen').style.display='none';document.getElementById('appScreen').style.display='block';loadDashboard()}
-    else{alert(data.error||'Erro')}
+    try {
+        const res=await fetch(API+'/api/auth/login',{
+            method:'POST',
+            headers:{'Content-Type':'application/json'},
+            body:JSON.stringify({
+                email:document.getElementById('loginEmail').value,
+                password:document.getElementById('loginPassword').value
+            })
+        });
+        const data=await res.json();
+        if(res.ok){
+            token=data.token;
+            localStorage.setItem('token',token);
+            document.getElementById('loginScreen').style.display='none';
+            document.getElementById('appScreen').style.display='block';
+            loadDashboard();
+        } else {
+            alert('❌ '+ (data.error || 'Erro no login'));
+        }
+    } catch(err) {
+        alert('Erro de conexão. Verifique sua internet.');
+    }
 });
 
-function logout(){localStorage.removeItem('token');token=null;document.getElementById('appScreen').style.display='none';document.getElementById('loginScreen').style.display='flex'}
+function logout(){
+    localStorage.removeItem('token');
+    token=null;
+    document.getElementById('appScreen').style.display='none';
+    document.getElementById('loginScreen').style.display='flex';
+}
 
 function showPage(p){
     document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));
@@ -182,85 +209,218 @@ function showPage(p){
     if(p==='treasury')loadTreasury();
 }
 
+// DASHBOARD
 async function loadDashboard(){
-    const res=await fetch(API+'/api/dashboard',{headers:{'Authorization':'Bearer '+token}});
-    const d=await res.json();
-    document.getElementById('dashboardStats').innerHTML='<div class="stat-card"><div class="stat-value">'+(d.totalItems||0)+'</div><div class="stat-label">Itens Stock</div></div><div class="stat-card"><div class="stat-value">€'+(d.monthPurchases||0).toFixed(2)+'</div><div class="stat-label">Compras Mês</div></div><div class="stat-card"><div class="stat-value">€'+(d.monthSales||0).toFixed(2)+'</div><div class="stat-label">Vendas Mês</div></div><div class="stat-card"><div class="stat-value">€'+(d.treasuryBalance||0).toFixed(2)+'</div><div class="stat-label">Saldo</div></div>';
-    document.querySelector('#recentTable tbody').innerHTML=(d.recentTransactions||[]).map(t=>'<tr><td>'+t.code+'</td><td>'+(t.lot_number||'-')+'</td><td>'+t.material_name+'</td><td><span class="badge badge-'+(t.type==='purchase'?'purchase':'sale')+'">'+(t.type==='purchase'?'Compra':'Venda')+'</span></td><td>'+t.currency+' '+parseFloat(t.total_price).toFixed(2)+'</td><td>'+new Date(t.transaction_date).toLocaleDateString('pt-PT')+'</td></tr>').join('')||'<tr><td colspan="6">Sem transações</td></tr>';
+    try {
+        const res=await fetch(API+'/api/dashboard',{headers:{'Authorization':'Bearer '+token}});
+        const d=await res.json();
+        document.getElementById('dashboardStats').innerHTML=
+            '<div class="stat-card"><div class="stat-value">'+(d.totalItems||0)+'</div><div class="stat-label">Itens Stock</div></div>'+
+            '<div class="stat-card"><div class="stat-value text-red">€'+(d.monthPurchases||0).toFixed(2)+'</div><div class="stat-label">Compras Mês</div></div>'+
+            '<div class="stat-card"><div class="stat-value text-green">€'+(d.monthSales||0).toFixed(2)+'</div><div class="stat-label">Vendas Mês</div></div>'+
+            '<div class="stat-card"><div class="stat-value">€'+(d.treasuryBalance||0).toFixed(2)+'</div><div class="stat-label">Saldo Tesouraria</div></div>';
+        
+        const tbody=document.querySelector('#recentTable tbody');
+        tbody.innerHTML=(d.recentTransactions||[]).map(t=>
+            '<tr><td>'+t.code+'</td><td>'+(t.lot_number||'-')+'</td><td>'+t.mn+'</td>'+
+            '<td><span class="badge badge-'+(t.type==='purchase'?'purchase':'sale')+'">'+(t.type==='purchase'?'Compra':'Venda')+'</span></td>'+
+            '<td>'+t.currency+' '+parseFloat(t.total_price).toFixed(2)+'</td>'+
+            '<td>'+new Date(t.transaction_date).toLocaleDateString('pt-PT')+'</td></tr>'
+        ).join('')||'<tr><td colspan="6">Sem transações</td></tr>';
+    } catch(e) { console.error(e); }
 }
 
+// TRANSAÇÕES
 async function loadTransactions(){
-    const res=await fetch(API+'/api/transactions',{headers:{'Authorization':'Bearer '+token}});
-    const data=await res.json();
-    document.querySelector('#transactionsTable tbody').innerHTML=data.map(t=>'<tr><td>'+t.code+'</td><td>'+(t.lot_number||'-')+'</td><td>'+t.material_name+'</td><td><span class="badge badge-'+(t.type==='purchase'?'purchase':'sale')+'">'+(t.type==='purchase'?'Compra':'Venda')+'</span></td><td>'+(t.weight_grams||t.weight_carats||'-')+'</td><td>'+t.currency+' '+parseFloat(t.price_per_unit||0).toFixed(2)+'</td><td>'+t.currency+' '+parseFloat(t.total_price).toFixed(2)+'</td><td>'+t.currency+'</td><td>'+(t.client_name||'-')+'</td><td>'+new Date(t.transaction_date).toLocaleDateString('pt-PT')+'</td><td><button class="btn btn-info btn-sm" onclick="editTransaction('+t.id+')">✏️</button> <button class="btn btn-danger btn-sm" onclick="deleteTransaction('+t.id+')">🗑️</button></td></tr>').join('')||'<tr><td colspan="11">Sem transações</td></tr>';
+    try {
+        const res=await fetch(API+'/api/transactions',{headers:{'Authorization':'Bearer '+token}});
+        const data=await res.json();
+        const tbody=document.querySelector('#transactionsTable tbody');
+        tbody.innerHTML=data.map(t=>
+            '<tr><td>'+t.code+'</td><td>'+(t.lot_number||'-')+'</td><td>'+t.mn+'</td>'+
+            '<td><span class="badge badge-'+(t.type==='purchase'?'purchase':'sale')+'">'+(t.type==='purchase'?'Compra':'Venda')+'</span></td>'+
+            '<td>'+(t.weight_grams||t.weight_carats||'0')+'</td>'+
+            '<td>'+t.currency+' '+parseFloat(t.price_per_unit||0).toFixed(2)+'</td>'+
+            '<td>'+t.currency+' '+parseFloat(t.total_price).toFixed(2)+'</td>'+
+            '<td>'+t.currency+'</td><td>'+(t.client_name||'-')+'</td>'+
+            '<td>'+new Date(t.transaction_date).toLocaleDateString('pt-PT')+'</td>'+
+            '<td><button class="btn btn-info btn-sm" onclick="editTransaction('+t.id+')">✏️</button> '+
+            '<button class="btn btn-danger btn-sm" onclick="deleteTransaction('+t.id+')">🗑️</button></td></tr>'
+        ).join('')||'<tr><td colspan="11">Sem transações</td></tr>';
+    } catch(e) { console.error(e); }
 }
 
 async function editTransaction(id){
-    const res=await fetch(API+'/api/transactions/'+id,{headers:{'Authorization':'Bearer '+token}});
-    const t=await res.json();
-    document.getElementById('modalTitle').textContent='Editar Transação';
-    document.getElementById('editId').value=t.id;
-    document.getElementById('materialId').value=t.material_id;
-    document.getElementById('type').value=t.type;
-    document.getElementById('lotNumber').value=t.lot_number||'';
-    document.getElementById('weightGrams').value=t.weight_grams||'';
-    document.getElementById('weightCarats').value=t.weight_carats||'';
-    document.getElementById('pricePerUnit').value=t.price_per_unit;
-    document.getElementById('totalPrice').value=t.total_price;
-    document.getElementById('currency').value=t.currency;
-    document.getElementById('quality').value=t.quality||'';
-    document.getElementById('origin').value=t.origin||'';
-    document.getElementById('clientName').value=t.client_name||'';
-    document.getElementById('paymentMethod').value=t.payment_method||'cash';
-    document.getElementById('transactionDate').value=t.transaction_date;
-    document.getElementById('notes').value=t.notes||'';
-    document.getElementById('submitBtn').textContent='Atualizar';
-    document.querySelectorAll('.currency-btn').forEach(b=>b.classList.remove('active'));
-    const ab=document.querySelector('[data-currency="'+t.currency+'"]');
-    if(ab)ab.classList.add('active');
-    loadMaterialsForSelect();showModal('transactionModal');
+    try {
+        const res=await fetch(API+'/api/transactions/'+id,{headers:{'Authorization':'Bearer '+token}});
+        const t=await res.json();
+        document.getElementById('modalTitle').textContent='Editar Transação';
+        document.getElementById('editId').value=t.id;
+        document.getElementById('materialId').value=t.material_id;
+        document.getElementById('type').value=t.type;
+        document.getElementById('lotNumber').value=t.lot_number||'';
+        document.getElementById('weightGrams').value=t.weight_grams||'';
+        document.getElementById('weightCarats').value=t.weight_carats||'';
+        document.getElementById('pricePerUnit').value=t.price_per_unit;
+        document.getElementById('totalPrice').value=t.total_price;
+        document.getElementById('currency').value=t.currency;
+        document.getElementById('quality').value=t.quality||'';
+        document.getElementById('origin').value=t.origin||'';
+        document.getElementById('clientName').value=t.client_name||'';
+        document.getElementById('paymentMethod').value=t.payment_method||'cash';
+        document.getElementById('transactionDate').value=t.transaction_date;
+        document.getElementById('notes').value=t.notes||'';
+        document.getElementById('submitBtn').textContent='Atualizar Transação';
+        document.querySelectorAll('.currency-btn').forEach(b=>b.classList.remove('active'));
+        const ab=document.querySelector('[data-currency="'+t.currency+'"]');
+        if(ab)ab.classList.add('active');
+        loadMaterialsForSelect();
+        showModal('transactionModal');
+    } catch(e) { console.error(e); }
 }
 
 async function deleteTransaction(id){
-    if(!confirm('Eliminar?'))return;
-    await fetch(API+'/api/transactions/'+id,{method:'DELETE',headers:{'Authorization':'Bearer '+token}});
-    alert('Eliminada!');loadTransactions();loadDashboard();
+    if(!confirm('Eliminar esta transação?'))return;
+    try {
+        const res=await fetch(API+'/api/transactions/'+id,{method:'DELETE',headers:{'Authorization':'Bearer '+token}});
+        if(res.ok){alert('✅ Eliminada!');loadTransactions();loadDashboard();}
+        else alert('Erro ao eliminar');
+    } catch(e) { alert('Erro de conexão'); }
 }
 
+// STOCK
 async function loadStock(){
-    const res=await fetch(API+'/api/stock-value',{headers:{'Authorization':'Bearer '+token}});
-    const data=await res.json();
-    document.querySelector('#stockTable tbody').innerHTML=data.map(m=>'<tr><td>'+(m.code||'-')+'</td><td>'+m.name+'</td><td>'+m.type+'</td><td>'+(m.stock_grams||0)+'g</td><td>'+(m.stock_carats||0)+'ct</td><td>€'+parseFloat(m.market_price_eur||0).toFixed(2)+'</td><td><strong>€'+m.estimatedValue+'</strong></td><td><button class="btn btn-info btn-sm" onclick="updatePrice('+m.id+','+m.market_price_eur+')">💲</button></td></tr>').join('')||'<tr><td colspan="8">Sem materiais</td></tr>';
+    try {
+        const res=await fetch(API+'/api/stock-value',{headers:{'Authorization':'Bearer '+token}});
+        const data=await res.json();
+        const tbody=document.querySelector('#stockTable tbody');
+        tbody.innerHTML=data.map(m=>
+            '<tr><td>'+(m.code||'-')+'</td><td>'+m.name+'</td><td>'+m.type+'</td>'+
+            '<td>'+(m.stock_grams||0)+'g</td><td>'+(m.stock_carats||0)+'ct</td>'+
+            '<td>€'+parseFloat(m.marketPrice||0).toFixed(2)+'</td>'+
+            '<td><strong>€'+m.estimatedValue+'</strong></td>'+
+            '<td><button class="btn btn-info btn-sm" onclick="updatePrice('+m.id+','+parseFloat(m.market_price_eur||0).toFixed(2)+')">💲</button></td></tr>'
+        ).join('')||'<tr><td colspan="8">Sem materiais. Os materiais são criados automaticamente.</td></tr>';
+    } catch(e) { console.error(e); }
 }
 
-function updatePrice(id,cp){const p=prompt('Preço (€):',cp);if(p)fetch(API+'/api/materials/'+id+'/price',{method:'PUT',headers:{'Content-Type':'application/json','Authorization':'Bearer '+token},body:JSON.stringify({market_price_eur:parseFloat(p)})}).then(()=>loadStock())}
-
-async function loadTreasury(){
-    const res=await fetch(API+'/api/treasury',{headers:{'Authorization':'Bearer '+token}});
-    const d=await res.json();
-    document.getElementById('treasuryStats').innerHTML='<div class="stat-card"><div class="stat-value">€'+d.income.toFixed(2)+'</div><div class="stat-label">Entradas</div></div><div class="stat-card"><div class="stat-value">€'+d.expense.toFixed(2)+'</div><div class="stat-label">Saídas</div></div><div class="stat-card"><div class="stat-value">€'+d.balance.toFixed(2)+'</div><div class="stat-label">Saldo</div></div>';
-    document.querySelector('#treasuryTable tbody').innerHTML=(d.transactions||[]).map(t=>'<tr><td>'+new Date(t.date).toLocaleDateString('pt-PT')+'</td><td>'+t.description+'</td><td><span class="badge badge-'+(t.type==='income'?'purchase':'sale')+'">'+(t.type==='income'?'Entrada':'Saída')+'</span></td><td>'+t.currency+' '+parseFloat(t.amount).toFixed(2)+'</td><td>'+t.currency+'</td><td>'+t.reference+'</td></tr>').join('')||'<tr><td colspan="6">Sem movimentos</td></tr>';
+function updatePrice(id,cp){
+    const p=prompt('Novo preço de mercado por unidade (€):',cp);
+    if(p && !isNaN(p)){
+        fetch(API+'/api/materials/'+id+'/price',{
+            method:'PUT',
+            headers:{'Content-Type':'application/json','Authorization':'Bearer '+token},
+            body:JSON.stringify({market_price_eur:parseFloat(p)})
+        }).then(()=>loadStock());
+    }
 }
-
-async function loadClients(){
-    const res=await fetch(API+'/api/clients',{headers:{'Authorization':'Bearer '+token}});
-    const data=await res.json();
-    document.querySelector('#clientsTable tbody').innerHTML=data.map(c=>'<tr><td>'+c.name+'</td><td>'+(c.email||'-')+'</td><td>'+(c.phone||'-')+'</td><td>€'+parseFloat(c.total_purchases||0).toFixed(2)+'</td></tr>').join('')||'<tr><td colspan="4">Sem clientes</td></tr>';
-}
-
-async function loadMaterialsForSelect(){
-    const res=await fetch(API+'/api/materials',{headers:{'Authorization':'Bearer '+token}});
-    const data=await res.json();
-    const sel=document.getElementById('materialId'),cv=sel.value;
-    sel.innerHTML='<option value="">Selecione...</option>'+data.map(m=>'<option value="'+m.id+'">'+m.name+' ('+m.code+')</option>').join('');
-    if(cv)sel.value=cv;
-}
-
-async function seedMaterials(){await fetch(API+'/api/materials/seed',{method:'POST',headers:{'Authorization':'Bearer '+token}});alert('Materiais criados!');loadStock()}
 
 function showAddMaterial(){
-    const n=prompt('Nome:'),c=prompt('Código:'),t=prompt('Tipo (metal/gem):'),s=prompt('Subtipo:'),u=prompt('Unidade (g/ct):'),p=prompt('Preço mercado (€):','0');
-    if(n&&c)fetch(API+'/api/materials',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+token},body:JSON.stringify({code:c,name:n,type:t,subtype:s,unit:u,market_price_eur:parseFloat(p)||0})}).then(()=>loadStock());
+    const n=prompt('Nome do material:');
+    if(!n)return;
+    const c=prompt('Código (ex: AU24K):');
+    if(!c)return;
+    const t=prompt('Tipo (metal ou gem):');
+    const s=prompt('Subtipo (ex: Ouro, Diamante):');
+    const u=prompt('Unidade (g ou ct):');
+    const p=prompt('Preço mercado por unidade (€):','0');
+    fetch(API+'/api/materials',{
+        method:'POST',
+        headers:{'Content-Type':'application/json','Authorization':'Bearer '+token},
+        body:JSON.stringify({code:c,name:n,type:t,subtype:s,unit:u,market_price_eur:parseFloat(p)||0})
+    }).then(()=>loadStock());
+}
+
+// PREÇOS
+function showPriceModal(){
+    const modal=document.createElement('div');
+    modal.style.cssText='position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.8);z-index:2000;display:flex;align-items:center;justify-content:center';
+    modal.innerHTML=
+        '<div style="background:#16213e;border-radius:15px;padding:25px;max-width:400px;width:90%;border:1px solid #c9a84c">'+
+        '<h3 style="color:#c9a84c;margin-bottom:20px">💲 Atualizar Preços de Mercado</h3>'+
+        '<div class="form-group"><label>Ouro 24K (€/grama)</label><input type="number" id="newGold" step="0.01" value="72"></div>'+
+        '<div class="form-group"><label>Prata (€/grama)</label><input type="number" id="newSilver" step="0.01" value="0.85"></div>'+
+        '<div class="form-group"><label>Platina (€/grama)</label><input type="number" id="newPlatinum" step="0.01" value="31"></div>'+
+        '<button onclick="savePrices()" style="background:#c9a84c;color:#1a1a2e;width:100%;padding:12px;border:none;border-radius:8px;font-weight:bold;cursor:pointer;margin-bottom:8px">Guardar Preços</button>'+
+        '<button onclick="this.closest(\'div\').parentElement.remove()" style="background:transparent;border:1px solid #f44336;color:#f44336;width:100%;padding:10px;border-radius:8px;cursor:pointer">Cancelar</button>'+
+        '</div>';
+    document.body.appendChild(modal);
+    modal.addEventListener('click',function(e){if(e.target===modal)modal.remove()});
+}
+
+async function savePrices(){
+    const g=parseFloat(document.getElementById('newGold').value)||72;
+    const s=parseFloat(document.getElementById('newSilver').value)||0.85;
+    const p=parseFloat(document.getElementById('newPlatinum').value)||31;
+    
+    try {
+        // Atualizar cada tipo de ouro
+        const materials = [
+            { code: 'AU24K', price: g },
+            { code: 'AU22K', price: g * 0.916 },
+            { code: 'AU20K', price: g * 0.833 },
+            { code: 'AU18K', price: g * 0.75 }
+        ];
+        
+        for (const m of materials) {
+            await fetch(API+'/api/materials/update-by-code', {
+                method:'PUT',
+                headers:{'Content-Type':'application/json','Authorization':'Bearer '+token},
+                body:JSON.stringify({code: m.code, price: m.price})
+            });
+        }
+        
+        alert('✅ Preços atualizados com sucesso!');
+        document.querySelectorAll('body>div').forEach(d=>{
+            if(d.style.position==='fixed'&&d.style.zIndex==='2000')d.remove();
+        });
+        loadStock();
+    } catch(e) {
+        alert('Erro ao atualizar preços');
+    }
+}
+
+// TESOURARIA
+async function loadTreasury(){
+    try {
+        const res=await fetch(API+'/api/treasury',{headers:{'Authorization':'Bearer '+token}});
+        const d=await res.json();
+        document.getElementById('treasuryStats').innerHTML=
+            '<div class="stat-card"><div class="stat-value text-green">€'+d.income.toFixed(2)+'</div><div class="stat-label">Entradas</div></div>'+
+            '<div class="stat-card"><div class="stat-value text-red">€'+d.expense.toFixed(2)+'</div><div class="stat-label">Saídas</div></div>'+
+            '<div class="stat-card"><div class="stat-value">€'+d.balance.toFixed(2)+'</div><div class="stat-label">Saldo</div></div>';
+        
+        const tbody=document.querySelector('#treasuryTable tbody');
+        tbody.innerHTML=(d.transactions||[]).map(t=>
+            '<tr><td>'+new Date(t.date).toLocaleDateString('pt-PT')+'</td><td>'+t.description+'</td>'+
+            '<td><span class="badge badge-'+(t.type==='income'?'purchase':'sale')+'">'+(t.type==='income'?'Entrada':'Saída')+'</span></td>'+
+            '<td>'+t.currency+' '+parseFloat(t.amount).toFixed(2)+'</td><td>'+t.currency+'</td><td>'+t.reference+'</td></tr>'
+        ).join('')||'<tr><td colspan="6">Sem movimentos</td></tr>';
+    } catch(e) { console.error(e); }
+}
+
+// CLIENTES
+async function loadClients(){
+    try {
+        const res=await fetch(API+'/api/clients',{headers:{'Authorization':'Bearer '+token}});
+        const data=await res.json();
+        const tbody=document.querySelector('#clientsTable tbody');
+        tbody.innerHTML=data.map(c=>
+            '<tr><td>'+c.name+'</td><td>'+(c.email||'-')+'</td><td>'+(c.phone||'-')+'</td><td>€'+parseFloat(c.total_purchases||0).toFixed(2)+'</td></tr>'
+        ).join('')||'<tr><td colspan="4">Sem clientes</td></tr>';
+    } catch(e) { console.error(e); }
+}
+
+// AUXILIARES
+async function loadMaterialsForSelect(){
+    try {
+        const res=await fetch(API+'/api/materials',{headers:{'Authorization':'Bearer '+token}});
+        const data=await res.json();
+        const sel=document.getElementById('materialId');
+        const cv=sel.value;
+        sel.innerHTML='<option value="">Selecione...</option>'+data.map(m=>'<option value="'+m.id+'">'+m.name+' ('+m.code+')</option>').join('');
+        if(cv)sel.value=cv;
+    } catch(e) { console.error(e); }
 }
 
 function showModal(id){
@@ -271,41 +431,123 @@ function showModal(id){
         document.getElementById('transactionForm').reset();
         document.getElementById('currency').value='EUR';
         document.querySelectorAll('.currency-btn').forEach(b=>b.classList.remove('active'));
-        document.querySelector('[data-currency="EUR"]').classList.add('active');
+        const eurBtn=document.querySelector('[data-currency="EUR"]');
+        if(eurBtn)eurBtn.classList.add('active');
         document.getElementById('transactionDate').value=new Date().toISOString().split('T')[0];
     }
     if(id==='transactionModal')loadMaterialsForSelect();
 }
 
-function closeModal(id){document.getElementById(id).classList.remove('active');document.getElementById('editId').value=''}
+function closeModal(id){
+    document.getElementById(id).classList.remove('active');
+    document.getElementById('editId').value='';
+}
 
+// MOEDAS
 document.querySelectorAll('.currency-btn').forEach(b=>b.addEventListener('click',function(){
     document.querySelectorAll('.currency-btn').forEach(x=>x.classList.remove('active'));
-    this.classList.add('active');document.getElementById('currency').value=this.dataset.currency;calcTotal();
+    this.classList.add('active');
+    document.getElementById('currency').value=this.dataset.currency;
+    calcTotal();
 }));
 
-['weightGrams','weightCarats','pricePerUnit'].forEach(id=>document.getElementById(id).addEventListener('input',calcTotal));
+['weightGrams','weightCarats','pricePerUnit'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(el)el.addEventListener('input',calcTotal);
+});
 
-function calcTotal(){const g=parseFloat(document.getElementById('weightGrams').value)||0,ct=parseFloat(document.getElementById('weightCarats').value)||0,pr=parseFloat(document.getElementById('pricePerUnit').value)||0;document.getElementById('totalPrice').value=((g+ct*0.2)*pr).toFixed(2)}
+function calcTotal(){
+    const g=parseFloat(document.getElementById('weightGrams').value)||0;
+    const ct=parseFloat(document.getElementById('weightCarats').value)||0;
+    const pr=parseFloat(document.getElementById('pricePerUnit').value)||0;
+    document.getElementById('totalPrice').value=((g+ct*0.2)*pr).toFixed(2);
+}
 
+// SUBMETER TRANSAÇÃO
 document.getElementById('transactionForm').addEventListener('submit',async(e)=>{
     e.preventDefault();
     const editId=document.getElementById('editId').value;
-    const body={material_id:document.getElementById('materialId').value,type:document.getElementById('type').value,lot_number:document.getElementById('lotNumber').value,weight_grams:parseFloat(document.getElementById('weightGrams').value)||0,weight_carats:parseFloat(document.getElementById('weightCarats').value)||0,price_per_unit:parseFloat(document.getElementById('pricePerUnit').value),total_price:parseFloat(document.getElementById('totalPrice').value),currency:document.getElementById('currency').value,quality:document.getElementById('quality').value,origin:document.getElementById('origin').value,client_name:document.getElementById('clientName').value,payment_method:document.getElementById('paymentMethod').value,transaction_date:document.getElementById('transactionDate').value,notes:document.getElementById('notes').value};
-    const url=editId?API+'/api/transactions/'+editId:API+'/api/transactions';
-    const method=editId?'PUT':'POST';
-    const res=await fetch(url,{method,headers:{'Content-Type':'application/json','Authorization':'Bearer '+token},body:JSON.stringify(body)});
-    if(res.ok){alert(editId?'Atualizada!✅':'Registada!✅');closeModal('transactionModal');loadDashboard();loadTransactions()}
-    else{alert('Erro ao registar')}
+    
+    const body={
+        material_id:document.getElementById('materialId').value,
+        type:document.getElementById('type').value,
+        lot_number:document.getElementById('lotNumber').value,
+        weight_grams:parseFloat(document.getElementById('weightGrams').value)||0,
+        weight_carats:parseFloat(document.getElementById('weightCarats').value)||0,
+        price_per_unit:parseFloat(document.getElementById('pricePerUnit').value),
+        total_price:parseFloat(document.getElementById('totalPrice').value),
+        currency:document.getElementById('currency').value,
+        quality:document.getElementById('quality').value,
+        origin:document.getElementById('origin').value,
+        client_name:document.getElementById('clientName').value,
+        payment_method:document.getElementById('paymentMethod').value,
+        transaction_date:document.getElementById('transactionDate').value,
+        notes:document.getElementById('notes').value
+    };
+    
+    // Validar campos obrigatórios
+    if(!body.material_id){alert('Selecione um material');return;}
+    if(!body.price_per_unit||body.price_per_unit<=0){alert('Preço por unidade é obrigatório');return;}
+    if(!body.transaction_date){alert('Data é obrigatória');return;}
+    
+    try {
+        const url=editId?API+'/api/transactions/'+editId:API+'/api/transactions';
+        const method=editId?'PUT':'POST';
+        
+        const res=await fetch(url,{
+            method,
+            headers:{'Content-Type':'application/json','Authorization':'Bearer '+token},
+            body:JSON.stringify(body)
+        });
+        
+        if(res.ok){
+            const data=await res.json();
+            alert('✅ '+(editId?'Transação atualizada!':'Transação registada!\n\nCódigo: '+data.code+'\nLote: '+data.lot));
+            closeModal('transactionModal');
+            loadDashboard();
+            loadTransactions();
+        } else {
+            const err=await res.json();
+            alert('❌ Erro: '+(err.error||'Erro ao registar'));
+        }
+    } catch(err) {
+        alert('Erro de conexão. Verifique sua internet.');
+    }
 });
 
+// SUBMETER CLIENTE
 document.getElementById('clientForm').addEventListener('submit',async(e)=>{
     e.preventDefault();
-    const res=await fetch(API+'/api/clients',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+token},body:JSON.stringify({name:document.getElementById('newClientName').value,email:document.getElementById('newClientEmail').value,phone:document.getElementById('newClientPhone').value,address:document.getElementById('newClientAddress').value,nif:document.getElementById('newClientNif').value})});
-    if(res.ok){alert('Cliente guardado!✅');closeModal('clientModal');loadClients()}
+    try {
+        const res=await fetch(API+'/api/clients',{
+            method:'POST',
+            headers:{'Content-Type':'application/json','Authorization':'Bearer '+token},
+            body:JSON.stringify({
+                name:document.getElementById('newClientName').value,
+                email:document.getElementById('newClientEmail').value,
+                phone:document.getElementById('newClientPhone').value,
+                address:document.getElementById('newClientAddress').value,
+                nif:document.getElementById('newClientNif').value
+            })
+        });
+        if(res.ok){
+            alert('✅ Cliente guardado!');
+            closeModal('clientModal');
+            loadClients();
+        } else {
+            alert('Erro ao guardar cliente');
+        }
+    } catch(err) {
+        alert('Erro de conexão');
+    }
 });
 
-if(token){document.getElementById('loginScreen').style.display='none';document.getElementById('appScreen').style.display='block';loadDashboard()}
+// INICIAR
+if(token){
+    document.getElementById('loginScreen').style.display='none';
+    document.getElementById('appScreen').style.display='block';
+    loadDashboard();
+}
 </script>
 </body>
 </html>
