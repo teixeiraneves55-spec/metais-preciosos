@@ -527,6 +527,29 @@ app.get('/api/market-prices', authMiddleware, async (req, res) => {
     res.status(500).json({ error: 'Erro ao obter preços' });
   }
 });
+// Atualizar preços de mercado manualmente
+app.post('/api/market-prices/update', authMiddleware, async (req, res) => {
+  try {
+    const { gold, silver, platinum } = req.body;
+    
+    if (gold) {
+      await pool.query("UPDATE materials SET market_price_eur = ROUND($1::numeric, 2) WHERE subtype = 'Ouro' AND code = 'AU24K'", [gold]);
+      await pool.query("UPDATE materials SET market_price_eur = ROUND(($1 * 0.916)::numeric, 2) WHERE subtype = 'Ouro' AND code = 'AU22K'", [gold]);
+      await pool.query("UPDATE materials SET market_price_eur = ROUND(($1 * 0.833)::numeric, 2) WHERE subtype = 'Ouro' AND code = 'AU20K'", [gold]);
+      await pool.query("UPDATE materials SET market_price_eur = ROUND(($1 * 0.75)::numeric, 2) WHERE subtype = 'Ouro' AND code = 'AU18K'", [gold]);
+    }
+    if (silver) {
+      await pool.query("UPDATE materials SET market_price_eur = ROUND($1::numeric, 2) WHERE subtype = 'Prata'", [silver]);
+    }
+    if (platinum) {
+      await pool.query("UPDATE materials SET market_price_eur = ROUND($1::numeric, 2) WHERE subtype = 'Platina'", [platinum]);
+    }
+    
+    res.json({ message: 'Preços atualizados com sucesso' });
+  } catch (error) {
+    res.status(500).json({ error: 'Erro ao atualizar preços' });
+  }
+});
 app.get('/api/treasury', authMiddleware, async (req, res) => {
   try {
     const result = await pool.query('SELECT * FROM treasury ORDER BY date DESC, created_at DESC');
