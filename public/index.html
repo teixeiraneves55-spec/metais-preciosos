@@ -70,8 +70,7 @@
             <h2>💎 Metais & Pedras</h2>
             <div style="display:flex;gap:8px;flex-wrap:wrap;">
                 <button class="btn btn-primary btn-sm" onclick="showModal('transactionModal')">+ Transação</button>
-                <button class="btn btn-primary btn-sm" onclick="showModal('transactionModal')">+ Transação</button>
-<button class="btn btn-sm" style="background:#ff9800;color:white;" onclick="updateMarketPrices()">📡 Cotações</button>
+                <button class="btn btn-sm" style="background:#ff9800;color:white;" onclick="updateMarketPrices()">📡 Cotações</button>
                 <button class="btn btn-info btn-sm" onclick="showPage('treasury')">🏦 Tesouraria</button>
                 <button class="btn btn-danger btn-sm" onclick="logout()">Sair</button>
             </div>
@@ -82,36 +81,27 @@
                 <div class="stats-grid" id="dashboardStats"></div>
                 <div class="card"><h3>🕐 Últimas Transações</h3><div class="table-container"><table id="recentTable"><thead><tr><th>Código</th><th>Lote</th><th>Material</th><th>Tipo</th><th>Valor</th><th>Data</th></tr></thead><tbody></tbody></table></div></div>
             </div>
-            
             <div id="transactionsPage" class="page">
-                <div class="card">
-                    <h3>📋 Histórico de Transações</h3>
-                    <div class="table-container"><table id="transactionsTable"><thead><tr><th>Código</th><th>Lote</th><th>Material</th><th>Tipo</th><th>Peso</th><th>Preço/u</th><th>Total</th><th>Moeda</th><th>Cliente</th><th>Data</th><th>Ações</th></tr></thead><tbody></tbody></table></div>
-                </div>
+                <div class="card"><h3>📋 Histórico</h3><div class="table-container"><table id="transactionsTable"><thead><tr><th>Código</th><th>Lote</th><th>Material</th><th>Tipo</th><th>Peso</th><th>Preço/u</th><th>Total</th><th>Moeda</th><th>Cliente</th><th>Data</th><th>Ações</th></tr></thead><tbody></tbody></table></div></div>
             </div>
-            
             <div id="stockPage" class="page">
-                <div class="card">
-                    <h3>💎 Stock de Materiais</h3>
+                <div class="card"><h3>💎 Stock</h3>
                     <div style="margin-bottom:15px;display:flex;gap:8px;flex-wrap:wrap;">
-                        <button class="btn btn-primary btn-sm" onclick="seedMaterials()">📦 Criar Materiais Padrão</button>
-                        <button class="btn btn-info btn-sm" onclick="showAddMaterial()">+ Novo Material</button>
+                        <button class="btn btn-primary btn-sm" onclick="seedMaterials()">📦 Materiais Padrão</button>
+                        <button class="btn btn-info btn-sm" onclick="showAddMaterial()">+ Material</button>
                     </div>
-                    <div class="table-container"><table id="stockTable"><thead><tr><th>Código</th><th>Nome</th><th>Tipo</th><th>Gramas</th><th>Quilates</th><th>Preço Mercado</th><th>Valor Stock (80%)</th><th>Ações</th></tr></thead><tbody></tbody></table></div>
+                    <div class="table-container"><table id="stockTable"><thead><tr><th>Código</th><th>Nome</th><th>Tipo</th><th>Gramas</th><th>Quilates</th><th>Preço Mercado</th><th>Valor (80%)</th><th>Ações</th></tr></thead><tbody></tbody></table></div>
                 </div>
             </div>
-            
             <div id="clientsPage" class="page">
-                <div class="card">
-                    <h3>👥 Clientes</h3>
+                <div class="card"><h3>👥 Clientes</h3>
                     <button class="btn btn-primary btn-sm" onclick="showModal('clientModal')" style="margin-bottom:15px;">+ Novo Cliente</button>
                     <div class="table-container"><table id="clientsTable"><thead><tr><th>Nome</th><th>Email</th><th>Telefone</th><th>Total Compras</th></tr></thead><tbody></tbody></table></div>
                 </div>
             </div>
-            
             <div id="treasuryPage" class="page">
                 <div class="stats-grid" id="treasuryStats"></div>
-                <div class="card"><h3>🏦 Movimentos de Tesouraria</h3><div class="table-container"><table id="treasuryTable"><thead><tr><th>Data</th><th>Descrição</th><th>Tipo</th><th>Valor</th><th>Moeda</th><th>Ref</th></tr></thead><tbody></tbody></table></div></div>
+                <div class="card"><h3>🏦 Tesouraria</h3><div class="table-container"><table id="treasuryTable"><thead><tr><th>Data</th><th>Descrição</th><th>Tipo</th><th>Valor</th><th>Moeda</th><th>Ref</th></tr></thead><tbody></tbody></table></div></div>
             </div>
         </div>
         
@@ -123,8 +113,7 @@
             <div class="nav-item" onclick="showPage('treasury')">🏦 Tesouraria</div>
         </div>
     </div>
-
-    <div id="transactionModal" class="modal">
+        <div id="transactionModal" class="modal">
         <div class="modal-content">
             <div class="modal-header"><h3 id="modalTitle">Nova Transação</h3><button class="close-btn" onclick="closeModal('transactionModal')">✕</button></div>
             <form id="transactionForm">
@@ -147,7 +136,7 @@
                 <div class="form-group"><label>Qualidade</label><select id="quality"><option value="">Selecione</option><option value="24K">24K (999.9)</option><option value="22K">22K (916)</option><option value="20K">20K (833)</option><option value="18K">18K (750)</option><option value="AAA">AAA (Gema)</option><option value="AA">AA (Gema)</option></select></div>
                 <div class="form-group"><label>Origem</label><input type="text" id="origin" placeholder="Ex: Brasil, África do Sul, Camarões"></div>
                 <div class="form-group"><label>Cliente</label><input type="text" id="clientName" placeholder="Nome do cliente"></div>
-                <div class="form-group"><label>Método de Pagamento</label><select id="paymentMethod"><option value="cash">Dinheiro</option><option value="card">Cartão</option><option value="transfer">Transferência</option><option value="mbway">MB WAY</option></select></div>
+                <div class="form-group"><label>Pagamento</label><select id="paymentMethod"><option value="cash">Dinheiro</option><option value="card">Cartão</option><option value="transfer">Transferência</option><option value="mbway">MB WAY</option></select></div>
                 <div class="form-group"><label>Data *</label><input type="date" id="transactionDate" required></div>
                 <div class="form-group"><label>Observações</label><textarea id="notes" rows="2"></textarea></div>
                 <button type="submit" id="submitBtn">Registar Transação</button>
@@ -275,13 +264,14 @@
             document.getElementById('notes').value = t.notes || '';
             document.getElementById('submitBtn').textContent = 'Atualizar Transação';
             document.querySelectorAll('.currency-btn').forEach(b => b.classList.remove('active'));
-            document.querySelector(`[data-currency="${t.currency}"]`)?.classList.add('active');
+            const activeBtn = document.querySelector(`[data-currency="${t.currency}"]`);
+            if (activeBtn) activeBtn.classList.add('active');
             loadMaterialsForSelect();
             showModal('transactionModal');
         }
 
         async function deleteTransaction(id) {
-            if (!confirm('Tem a certeza que deseja eliminar esta transação?')) return;
+            if (!confirm('Eliminar esta transação?')) return;
             const res = await fetch(API + '/api/transactions/' + id, { method: 'DELETE', headers: { 'Authorization': 'Bearer ' + token } });
             if (res.ok) { alert('Transação eliminada! ✅'); loadTransactions(); loadDashboard(); }
         }
@@ -362,6 +352,26 @@
             }).then(() => loadStock());
         }
 
+        async function updateMarketPrices() {
+            const btn = event.target;
+            btn.textContent = '⏳...';
+            btn.disabled = true;
+            try {
+                const res = await fetch(API + '/api/market-prices', { headers: { 'Authorization': 'Bearer ' + token } });
+                const data = await res.json();
+                if (res.ok && data.gold) {
+                    alert('✅ Cotações atualizadas!\n\nOuro 24K: €' + data.gold.toFixed(2) + '/g\nPrata: €' + (data.silver?.toFixed(2) || 'N/D') + '/g\nPlatina: €' + (data.platinum?.toFixed(2) || 'N/D') + '/g');
+                    loadStock();
+                } else {
+                    alert('⚠️ Limite da API gratuita atingido. Tente mais tarde.');
+                }
+            } catch(e) {
+                alert('Erro de conexão');
+            }
+            btn.textContent = '📡 Cotações';
+            btn.disabled = false;
+        }
+
         function showModal(id) {
             document.getElementById(id).classList.add('active');
             if (id === 'transactionModal') {
@@ -369,6 +379,9 @@
                     document.getElementById('modalTitle').textContent = 'Nova Transação';
                     document.getElementById('submitBtn').textContent = 'Registar Transação';
                     document.getElementById('transactionForm').reset();
+                    document.getElementById('currency').value = 'EUR';
+                    document.querySelectorAll('.currency-btn').forEach(b => b.classList.remove('active'));
+                    document.querySelector('[data-currency="EUR"]').classList.add('active');
                 }
                 loadMaterialsForSelect();
                 document.getElementById('transactionDate').value = new Date().toISOString().split('T')[0];
@@ -419,15 +432,12 @@
                 transaction_date: document.getElementById('transactionDate').value,
                 notes: document.getElementById('notes').value
             };
-            
             const url = editId ? API + '/api/transactions/' + editId : API + '/api/transactions';
             const method = editId ? 'PUT' : 'POST';
-            
             const res = await fetch(url, {
                 method, headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
                 body: JSON.stringify(body)
             });
-            
             if (res.ok) {
                 alert(editId ? 'Transação atualizada! ✅' : 'Transação registada! ✅');
                 closeModal('transactionModal');
@@ -454,27 +464,7 @@
             });
             if (res.ok) { alert('Cliente guardado! ✅'); closeModal('clientModal'); loadClients(); }
         });
-async function updateMarketPrices() {
-    const btn = event.target;
-    btn.textContent = '⏳...';
-    btn.disabled = true;
-    try {
-        const res = await fetch(API + '/api/market-prices', { headers: { 'Authorization': 'Bearer ' + token } });
-        const data = await res.json();
-        if (res.ok && data.gold) {
-            alert('✅ Cotações atualizadas!\n\nOuro 24K: €' + data.gold.toFixed(2) + '/g\nPrata: €' + (data.silver?.toFixed(2) || 'N/D') + '/g\nPlatina: €' + (data.platinum?.toFixed(2) || 'N/D') + '/g');
-            loadStock();
-        } else {
-            alert('⚠️ Erro na API. Tente novamente.');
-        }
-    } catch(e) {
-        alert('Erro de conexão');
-    }
-    btn.textContent = '📡 Cotações';
-    btn.disabled = false;
-}
 
-if (token) {
         if (token) {
             document.getElementById('loginScreen').style.display = 'none';
             document.getElementById('appScreen').style.display = 'block';
