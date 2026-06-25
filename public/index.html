@@ -7,86 +7,49 @@
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: Arial, sans-serif; background: #1a1a2e; color: #e0e0e0; min-height: 100vh; }
-        
-        .login-container {
-            display: flex; align-items: center; justify-content: center;
-            min-height: 100vh; padding: 20px;
-        }
-        .login-card {
-            background: #16213e; padding: 40px; border-radius: 15px;
-            border: 1px solid #c9a84c; width: 100%; max-width: 400px;
-        }
+        .login-container { display: flex; align-items: center; justify-content: center; min-height: 100vh; padding: 20px; }
+        .login-card { background: #16213e; padding: 40px; border-radius: 15px; border: 1px solid #c9a84c; width: 100%; max-width: 400px; }
         .login-card h1 { color: #c9a84c; text-align: center; margin-bottom: 5px; }
         .login-card p { text-align: center; color: #a0a0a0; margin-bottom: 25px; font-size: 14px; }
-        
         .form-group { margin-bottom: 15px; }
         .form-group label { display: block; margin-bottom: 5px; color: #c9a84c; font-weight: bold; }
-        input, select, textarea {
-            width: 100%; padding: 12px; border: 1px solid #c9a84c;
-            border-radius: 8px; background: #1a1a2e; color: #e0e0e0; font-size: 14px;
-        }
-        button {
-            width: 100%; padding: 14px; background: #c9a84c; color: #1a1a2e;
-            border: none; border-radius: 8px; font-size: 16px; font-weight: bold; cursor: pointer;
-        }
+        input, select, textarea { width: 100%; padding: 12px; border: 1px solid #c9a84c; border-radius: 8px; background: #1a1a2e; color: #e0e0e0; font-size: 14px; }
+        button { width: 100%; padding: 14px; background: #c9a84c; color: #1a1a2e; border: none; border-radius: 8px; font-size: 16px; font-weight: bold; cursor: pointer; }
         button:hover { background: #b8960f; }
-        
-        .header {
-            background: #16213e; padding: 15px 20px; display: flex;
-            justify-content: space-between; align-items: center; border-bottom: 1px solid #c9a84c;
-        }
-        .header h2 { color: #c9a84c; }
-        
-        .nav-bar {
-            position: fixed; bottom: 0; left: 0; right: 0;
-            background: #16213e; display: flex; justify-content: space-around;
-            padding: 10px; border-top: 1px solid #c9a84c;
-        }
-        .nav-item {
-            color: #a0a0a0; cursor: pointer; padding: 8px 15px;
-            border-radius: 8px; text-align: center; font-size: 12px;
-        }
+        .header { background: #16213e; padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #c9a84c; flex-wrap: wrap; gap: 10px; }
+        .header h2 { color: #c9a84c; font-size: 18px; }
+        .nav-bar { position: fixed; bottom: 0; left: 0; right: 0; background: #16213e; display: flex; justify-content: space-around; padding: 10px; border-top: 1px solid #c9a84c; z-index: 100; }
+        .nav-item { color: #a0a0a0; cursor: pointer; padding: 8px 12px; border-radius: 8px; text-align: center; font-size: 11px; }
         .nav-item.active { color: #c9a84c; background: rgba(201,168,76,0.1); }
-        
         .main-content { padding: 20px; padding-bottom: 80px; max-width: 1200px; margin: 0 auto; }
         .page { display: none; }
         .page.active { display: block; }
-        
-        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px; margin-bottom: 20px; }
-        .stat-card {
-            background: #16213e; padding: 20px; border-radius: 12px;
-            border: 1px solid rgba(201,168,76,0.3); text-align: center;
-        }
-        .stat-value { font-size: 28px; font-weight: bold; color: #c9a84c; }
-        .stat-label { font-size: 12px; color: #a0a0a0; margin-top: 5px; }
-        
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 15px; margin-bottom: 20px; }
+        .stat-card { background: #16213e; padding: 20px; border-radius: 12px; border: 1px solid rgba(201,168,76,0.3); text-align: center; }
+        .stat-value { font-size: 24px; font-weight: bold; color: #c9a84c; }
+        .stat-label { font-size: 11px; color: #a0a0a0; margin-top: 5px; }
         .card { background: #16213e; border-radius: 12px; padding: 20px; margin-bottom: 15px; border: 1px solid rgba(201,168,76,0.2); }
         .card h3 { color: #c9a84c; margin-bottom: 15px; }
-        
-        table { width: 100%; border-collapse: collapse; }
-        th, td { padding: 10px; text-align: left; border-bottom: 1px solid rgba(255,255,255,0.1); font-size: 14px; }
-        th { color: #c9a84c; }
-        
-        .badge { padding: 4px 10px; border-radius: 15px; font-size: 12px; }
+        table { width: 100%; border-collapse: collapse; font-size: 13px; }
+        th, td { padding: 10px; text-align: left; border-bottom: 1px solid rgba(255,255,255,0.1); }
+        th { color: #c9a84c; font-size: 12px; }
+        .badge { padding: 4px 10px; border-radius: 15px; font-size: 11px; }
         .badge-purchase { background: rgba(76,175,80,0.2); color: #4caf50; }
         .badge-sale { background: rgba(244,67,54,0.2); color: #f44336; }
-        
-        .btn { padding: 8px 16px; border-radius: 6px; border: none; cursor: pointer; font-size: 13px; margin: 2px; }
+        .btn { padding: 8px 14px; border-radius: 6px; border: none; cursor: pointer; font-size: 12px; margin: 2px; width: auto; }
         .btn-primary { background: #c9a84c; color: #1a1a2e; }
         .btn-danger { background: #f44336; color: white; }
-        .btn-sm { padding: 5px 10px; font-size: 12px; }
-        
-        .modal {
-            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.8); z-index: 1000; align-items: center; justify-content: center;
-        }
+        .btn-info { background: #2196f3; color: white; }
+        .btn-sm { padding: 5px 10px; font-size: 11px; }
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 1000; align-items: center; justify-content: center; }
         .modal.active { display: flex; }
-        .modal-content {
-            background: #16213e; border-radius: 15px; padding: 25px;
-            max-width: 500px; width: 90%; max-height: 90vh; overflow-y: auto;
-        }
+        .modal-content { background: #16213e; border-radius: 15px; padding: 25px; max-width: 550px; width: 90%; max-height: 90vh; overflow-y: auto; }
         .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
         .close-btn { background: none; border: none; color: #e0e0e0; font-size: 24px; cursor: pointer; }
+        .table-container { overflow-x: auto; }
+        .currency-selector { display: flex; gap: 8px; margin-bottom: 10px; flex-wrap: wrap; }
+        .currency-btn { padding: 6px 12px; border: 1px solid #c9a84c; background: transparent; color: #c9a84c; border-radius: 15px; cursor: pointer; font-size: 12px; }
+        .currency-btn.active { background: #c9a84c; color: #1a1a2e; }
     </style>
 </head>
 <body>
@@ -95,14 +58,8 @@
             <h1>💎 Metais & Pedras</h1>
             <p>Sistema Profissional de Gestão</p>
             <form id="loginForm">
-                <div class="form-group">
-                    <label>Email</label>
-                    <input type="email" id="loginEmail" value="admin@metaispreciosos.pt" required>
-                </div>
-                <div class="form-group">
-                    <label>Senha</label>
-                    <input type="password" id="loginPassword" value="Admin123!" required>
-                </div>
+                <div class="form-group"><label>Email</label><input type="email" id="loginEmail" value="admin@metaispreciosos.pt" required></div>
+                <div class="form-group"><label>Senha</label><input type="password" id="loginPassword" value="Admin123!" required></div>
                 <button type="submit">Entrar</button>
             </form>
         </div>
@@ -111,8 +68,9 @@
     <div id="appScreen" style="display:none;">
         <div class="header">
             <h2>💎 Metais & Pedras</h2>
-            <div>
-                <button class="btn btn-primary btn-sm" onclick="showModal('transactionModal')">+ Nova Transação</button>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;">
+                <button class="btn btn-primary btn-sm" onclick="showModal('transactionModal')">+ Transação</button>
+                <button class="btn btn-info btn-sm" onclick="showPage('treasury')">🏦 Tesouraria</button>
                 <button class="btn btn-danger btn-sm" onclick="logout()">Sair</button>
             </div>
         </div>
@@ -120,36 +78,38 @@
         <div class="main-content">
             <div id="dashboardPage" class="page active">
                 <div class="stats-grid" id="dashboardStats"></div>
-                <div class="card">
-                    <h3>🕐 Últimas Transações</h3>
-                    <table id="recentTable"><thead><tr><th>Código</th><th>Material</th><th>Tipo</th><th>Valor</th><th>Data</th></tr></thead><tbody></tbody></table>
-                </div>
+                <div class="card"><h3>🕐 Últimas Transações</h3><div class="table-container"><table id="recentTable"><thead><tr><th>Código</th><th>Lote</th><th>Material</th><th>Tipo</th><th>Valor</th><th>Data</th></tr></thead><tbody></tbody></table></div></div>
             </div>
             
             <div id="transactionsPage" class="page">
                 <div class="card">
                     <h3>📋 Histórico de Transações</h3>
-                    <table id="transactionsTable"><thead><tr><th>Código</th><th>Material</th><th>Tipo</th><th>Peso</th><th>Preço/g</th><th>Total</th><th>Cliente</th><th>Data</th></tr></thead><tbody></tbody></table>
+                    <div class="table-container"><table id="transactionsTable"><thead><tr><th>Código</th><th>Lote</th><th>Material</th><th>Tipo</th><th>Peso</th><th>Preço/u</th><th>Total</th><th>Moeda</th><th>Cliente</th><th>Data</th><th>Ações</th></tr></thead><tbody></tbody></table></div>
                 </div>
             </div>
             
             <div id="stockPage" class="page">
-    <div class="card">
-        <h3>💎 Stock de Materiais</h3>
-        <div style="margin-bottom:15px;">
-            <button class="btn btn-primary btn-sm" onclick="seedMaterials()">📦 Criar Materiais Padrão</button>
-            <button class="btn btn-sm" style="background:#2196f3;color:white;" onclick="showAddMaterial()">+ Novo Material</button>
-        </div>
-        <table id="stockTable"><thead><tr><th>Código</th><th>Nome</th><th>Tipo</th><th>Gramas</th><th>Quilates</th><th>Ações</th></tr></thead><tbody></tbody></table>
-    </div>
-</div>
+                <div class="card">
+                    <h3>💎 Stock de Materiais</h3>
+                    <div style="margin-bottom:15px;display:flex;gap:8px;flex-wrap:wrap;">
+                        <button class="btn btn-primary btn-sm" onclick="seedMaterials()">📦 Criar Materiais Padrão</button>
+                        <button class="btn btn-info btn-sm" onclick="showAddMaterial()">+ Novo Material</button>
+                    </div>
+                    <div class="table-container"><table id="stockTable"><thead><tr><th>Código</th><th>Nome</th><th>Tipo</th><th>Gramas</th><th>Quilates</th><th>Preço Mercado</th><th>Valor Stock (80%)</th><th>Ações</th></tr></thead><tbody></tbody></table></div>
+                </div>
+            </div>
             
             <div id="clientsPage" class="page">
                 <div class="card">
                     <h3>👥 Clientes</h3>
                     <button class="btn btn-primary btn-sm" onclick="showModal('clientModal')" style="margin-bottom:15px;">+ Novo Cliente</button>
-                    <table id="clientsTable"><thead><tr><th>Nome</th><th>Email</th><th>Telefone</th><th>Total Compras</th></tr></thead><tbody></tbody></table>
+                    <div class="table-container"><table id="clientsTable"><thead><tr><th>Nome</th><th>Email</th><th>Telefone</th><th>Total Compras</th></tr></thead><tbody></tbody></table></div>
                 </div>
+            </div>
+            
+            <div id="treasuryPage" class="page">
+                <div class="stats-grid" id="treasuryStats"></div>
+                <div class="card"><h3>🏦 Movimentos de Tesouraria</h3><div class="table-container"><table id="treasuryTable"><thead><tr><th>Data</th><th>Descrição</th><th>Tipo</th><th>Valor</th><th>Moeda</th><th>Ref</th></tr></thead><tbody></tbody></table></div></div>
             </div>
         </div>
         
@@ -158,48 +118,44 @@
             <div class="nav-item" onclick="showPage('transactions')">📋 Transações</div>
             <div class="nav-item" onclick="showPage('stock')">💎 Stock</div>
             <div class="nav-item" onclick="showPage('clients')">👥 Clientes</div>
+            <div class="nav-item" onclick="showPage('treasury')">🏦 Tesouraria</div>
         </div>
     </div>
 
     <div id="transactionModal" class="modal">
         <div class="modal-content">
-            <div class="modal-header">
-                <h3>Nova Transação</h3>
-                <button class="close-btn" onclick="closeModal('transactionModal')">✕</button>
-            </div>
+            <div class="modal-header"><h3 id="modalTitle">Nova Transação</h3><button class="close-btn" onclick="closeModal('transactionModal')">✕</button></div>
             <form id="transactionForm">
-                <div class="form-group">
-                    <label>Material *</label>
-                    <select id="materialId" required></select>
-                </div>
-                <div class="form-group">
-                    <label>Tipo *</label>
-                    <select id="type" required>
-                        <option value="purchase">Compra</option>
-                        <option value="sale">Venda</option>
-                    </select>
-                </div>
+                <input type="hidden" id="editId">
+                <div class="form-group"><label>Material *</label><select id="materialId" required></select></div>
+                <div class="form-group"><label>Tipo *</label><select id="type" required><option value="purchase">Compra</option><option value="sale">Venda</option></select></div>
+                <div class="form-group"><label>Nº Lote</label><input type="text" id="lotNumber" placeholder="Ex: LOTE-2026-001"></div>
                 <div class="form-group"><label>Peso (gramas)</label><input type="number" id="weightGrams" step="0.001" placeholder="0.000"></div>
                 <div class="form-group"><label>Peso (quilates)</label><input type="number" id="weightCarats" step="0.001" placeholder="0.000"></div>
-                <div class="form-group"><label>Preço por Unidade (€) *</label><input type="number" id="pricePerUnit" step="0.01" required></div>
-                <div class="form-group"><label>Preço Total (€)</label><input type="number" id="totalPrice" step="0.01" readonly></div>
-                <div class="form-group"><label>Qualidade</label><select id="quality"><option value="">Selecione</option><option value="24K">24K (999.9)</option><option value="22K">22K (916)</option><option value="18K">18K (750)</option><option value="14K">14K (585)</option><option value="AAA">AAA (Gema)</option><option value="AA">AA (Gema)</option><option value="A">A (Gema)</option></select></div>
-                <div class="form-group"><label>Origem</label><input type="text" id="origin" placeholder="Ex: Brasil, África do Sul"></div>
+                <div class="form-group"><label>Preço por Unidade *</label><input type="number" id="pricePerUnit" step="0.01" required></div>
+                <div class="form-group"><label>Preço Total</label><input type="number" id="totalPrice" step="0.01" readonly></div>
+                <div class="form-group"><label>Moeda</label>
+                    <div class="currency-selector" id="currencySelector">
+                        <span class="currency-btn active" data-currency="EUR">€ EUR</span>
+                        <span class="currency-btn" data-currency="USD">$ USD</span>
+                        <span class="currency-btn" data-currency="FCFA">FCFA</span>
+                    </div>
+                    <input type="hidden" id="currency" value="EUR">
+                </div>
+                <div class="form-group"><label>Qualidade</label><select id="quality"><option value="">Selecione</option><option value="24K">24K (999.9)</option><option value="22K">22K (916)</option><option value="20K">20K (833)</option><option value="18K">18K (750)</option><option value="AAA">AAA (Gema)</option><option value="AA">AA (Gema)</option></select></div>
+                <div class="form-group"><label>Origem</label><input type="text" id="origin" placeholder="Ex: Brasil, África do Sul, Camarões"></div>
                 <div class="form-group"><label>Cliente</label><input type="text" id="clientName" placeholder="Nome do cliente"></div>
                 <div class="form-group"><label>Método de Pagamento</label><select id="paymentMethod"><option value="cash">Dinheiro</option><option value="card">Cartão</option><option value="transfer">Transferência</option><option value="mbway">MB WAY</option></select></div>
                 <div class="form-group"><label>Data *</label><input type="date" id="transactionDate" required></div>
                 <div class="form-group"><label>Observações</label><textarea id="notes" rows="2"></textarea></div>
-                <button type="submit">Registar Transação</button>
+                <button type="submit" id="submitBtn">Registar Transação</button>
             </form>
         </div>
     </div>
 
     <div id="clientModal" class="modal">
         <div class="modal-content">
-            <div class="modal-header">
-                <h3>Novo Cliente</h3>
-                <button class="close-btn" onclick="closeModal('clientModal')">✕</button>
-            </div>
+            <div class="modal-header"><h3>Novo Cliente</h3><button class="close-btn" onclick="closeModal('clientModal')">✕</button></div>
             <form id="clientForm">
                 <div class="form-group"><label>Nome *</label><input type="text" id="newClientName" required></div>
                 <div class="form-group"><label>Email</label><input type="email" id="newClientEmail"></div>
@@ -212,44 +168,15 @@
     </div>
 
     <script>
-       async function seedMaterials() {
-    const res = await fetch(API + '/api/materials/seed', {
-        method: 'POST',
-        headers: { 'Authorization': 'Bearer ' + token }
-    });
-    if (res.ok) {
-        alert('Materiais criados com sucesso! ✅');
-        loadStock();
-    }
-}
-
-function showAddMaterial() {
-    const name = prompt('Nome do material:');
-    if (!name) return;
-    const code = prompt('Código (ex: AU24K):');
-    if (!code) return;
-    const type = prompt('Tipo (metal ou gem):');
-    const subtype = prompt('Subtipo (ex: Ouro, Diamante):');
-    const unit = prompt('Unidade (g ou ct):');
-    
-    fetch(API + '/api/materials', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
-        body: JSON.stringify({ code, name, type, subtype, unit })
-    }).then(() => loadStock());
-}
         const API = '';
         let token = localStorage.getItem('token');
+        let exchangeRates = { EUR: 1, USD: 1.08, FCFA: 655.96 };
 
         document.getElementById('loginForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             const res = await fetch(API + '/api/auth/login', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    email: document.getElementById('loginEmail').value,
-                    password: document.getElementById('loginPassword').value
-                })
+                method: 'POST', headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email: document.getElementById('loginEmail').value, password: document.getElementById('loginPassword').value })
             });
             const data = await res.json();
             if (res.ok) {
@@ -257,10 +184,9 @@ function showAddMaterial() {
                 localStorage.setItem('token', token);
                 document.getElementById('loginScreen').style.display = 'none';
                 document.getElementById('appScreen').style.display = 'block';
+                loadRates();
                 loadDashboard();
-            } else {
-                alert(data.error || 'Erro no login');
-            }
+            } else { alert(data.error || 'Erro no login'); }
         });
 
         function logout() {
@@ -268,6 +194,13 @@ function showAddMaterial() {
             token = null;
             document.getElementById('appScreen').style.display = 'none';
             document.getElementById('loginScreen').style.display = 'flex';
+        }
+
+        async function loadRates() {
+            try {
+                const res = await fetch(API + '/api/exchange-rates', { headers: { 'Authorization': 'Bearer ' + token } });
+                if (res.ok) exchangeRates = await res.json();
+            } catch(e) {}
         }
 
         function showPage(page) {
@@ -279,6 +212,7 @@ function showAddMaterial() {
             if (page === 'transactions') loadTransactions();
             if (page === 'stock') loadStock();
             if (page === 'clients') loadClients();
+            if (page === 'treasury') loadTreasury();
         }
 
         async function loadDashboard() {
@@ -288,15 +222,15 @@ function showAddMaterial() {
                 <div class="stat-card"><div class="stat-value">${data.totalItems || 0}</div><div class="stat-label">Itens em Stock</div></div>
                 <div class="stat-card"><div class="stat-value">€${(data.monthPurchases || 0).toFixed(2)}</div><div class="stat-label">Compras do Mês</div></div>
                 <div class="stat-card"><div class="stat-value">€${(data.monthSales || 0).toFixed(2)}</div><div class="stat-label">Vendas do Mês</div></div>
+                <div class="stat-card"><div class="stat-value">€${(data.treasuryBalance || 0).toFixed(2)}</div><div class="stat-label">Saldo Tesouraria</div></div>
             `;
             const tbody = document.querySelector('#recentTable tbody');
             tbody.innerHTML = (data.recentTransactions || []).map(t => `
-                <tr>
-                    <td>${t.code}</td><td>${t.material_name}</td>
-                    <td><span class="badge badge-${t.type === 'purchase' ? 'purchase' : 'sale'}">${t.type === 'purchase' ? 'Compra' : 'Venda'}</span></td>
-                    <td>€${parseFloat(t.total_price).toFixed(2)}</td>
-                    <td>${new Date(t.transaction_date).toLocaleDateString('pt-PT')}</td>
-                </tr>`).join('') || '<tr><td colspan="5">Sem transações</td></tr>';
+                <tr><td>${t.code}</td><td>${t.lot_number || '-'}</td><td>${t.material_name}</td>
+                    <td><span class="badge badge-${t.type==='purchase'?'purchase':'sale'}">${t.type==='purchase'?'Compra':'Venda'}</span></td>
+                    <td>${t.currency} ${parseFloat(t.total_price).toFixed(2)}</td>
+                    <td>${new Date(t.transaction_date).toLocaleDateString('pt-PT')}</td></tr>
+            `).join('') || '<tr><td colspan="6">Sem transações</td></tr>';
         }
 
         async function loadTransactions() {
@@ -304,26 +238,88 @@ function showAddMaterial() {
             const data = await res.json();
             const tbody = document.querySelector('#transactionsTable tbody');
             tbody.innerHTML = data.map(t => `
-                <tr>
-                    <td>${t.code}</td><td>${t.material_name}</td>
-                    <td><span class="badge badge-${t.type === 'purchase' ? 'purchase' : 'sale'}">${t.type === 'purchase' ? 'Compra' : 'Venda'}</span></td>
+                <tr><td>${t.code}</td><td>${t.lot_number || '-'}</td><td>${t.material_name}</td>
+                    <td><span class="badge badge-${t.type==='purchase'?'purchase':'sale'}">${t.type==='purchase'?'Compra':'Venda'}</span></td>
                     <td>${t.weight_grams || t.weight_carats || '-'}</td>
-                    <td>€${parseFloat(t.price_per_unit || 0).toFixed(2)}</td>
-                    <td>€${parseFloat(t.total_price).toFixed(2)}</td>
-                    <td>${t.client_name || '-'}</td>
+                    <td>${t.currency} ${parseFloat(t.price_per_unit||0).toFixed(2)}</td>
+                    <td>${t.currency} ${parseFloat(t.total_price).toFixed(2)}</td>
+                    <td>${t.currency}</td><td>${t.client_name || '-'}</td>
                     <td>${new Date(t.transaction_date).toLocaleDateString('pt-PT')}</td>
-                </tr>`).join('') || '<tr><td colspan="8">Sem transações</td></tr>';
+                    <td>
+                        <button class="btn btn-info btn-sm" onclick="editTransaction(${t.id})">✏️</button>
+                        <button class="btn btn-danger btn-sm" onclick="deleteTransaction(${t.id})">🗑️</button>
+                    </td></tr>
+            `).join('') || '<tr><td colspan="11">Sem transações</td></tr>';
+        }
+
+        async function editTransaction(id) {
+            const res = await fetch(API + '/api/transactions/' + id, { headers: { 'Authorization': 'Bearer ' + token } });
+            const t = await res.json();
+            document.getElementById('modalTitle').textContent = 'Editar Transação';
+            document.getElementById('editId').value = t.id;
+            document.getElementById('materialId').value = t.material_id;
+            document.getElementById('type').value = t.type;
+            document.getElementById('lotNumber').value = t.lot_number || '';
+            document.getElementById('weightGrams').value = t.weight_grams || '';
+            document.getElementById('weightCarats').value = t.weight_carats || '';
+            document.getElementById('pricePerUnit').value = t.price_per_unit;
+            document.getElementById('totalPrice').value = t.total_price;
+            document.getElementById('currency').value = t.currency;
+            document.getElementById('quality').value = t.quality || '';
+            document.getElementById('origin').value = t.origin || '';
+            document.getElementById('clientName').value = t.client_name || '';
+            document.getElementById('paymentMethod').value = t.payment_method || 'cash';
+            document.getElementById('transactionDate').value = t.transaction_date;
+            document.getElementById('notes').value = t.notes || '';
+            document.getElementById('submitBtn').textContent = 'Atualizar Transação';
+            document.querySelectorAll('.currency-btn').forEach(b => b.classList.remove('active'));
+            document.querySelector(`[data-currency="${t.currency}"]`)?.classList.add('active');
+            loadMaterialsForSelect();
+            showModal('transactionModal');
+        }
+
+        async function deleteTransaction(id) {
+            if (!confirm('Tem a certeza que deseja eliminar esta transação?')) return;
+            const res = await fetch(API + '/api/transactions/' + id, { method: 'DELETE', headers: { 'Authorization': 'Bearer ' + token } });
+            if (res.ok) { alert('Transação eliminada! ✅'); loadTransactions(); loadDashboard(); }
         }
 
         async function loadStock() {
-            const res = await fetch(API + '/api/materials', { headers: { 'Authorization': 'Bearer ' + token } });
+            const res = await fetch(API + '/api/stock-value', { headers: { 'Authorization': 'Bearer ' + token } });
             const data = await res.json();
             const tbody = document.querySelector('#stockTable tbody');
             tbody.innerHTML = data.map(m => `
-                <tr>
-                    <td>${m.code || '-'}</td><td>${m.name}</td><td>${m.type}</td>
+                <tr><td>${m.code || '-'}</td><td>${m.name}</td><td>${m.type}</td>
                     <td>${m.stock_grams || 0}g</td><td>${m.stock_carats || 0}ct</td>
-                </tr>`).join('') || '<tr><td colspan="5">Sem materiais</td></tr>';
+                    <td>€${parseFloat(m.market_price_eur||0).toFixed(2)}</td>
+                    <td><strong>€${m.estimatedValue}</strong></td>
+                    <td><button class="btn btn-info btn-sm" onclick="updatePrice(${m.id}, ${m.market_price_eur})">💲</button></td></tr>
+            `).join('') || '<tr><td colspan="8">Sem materiais</td></tr>';
+        }
+
+        function updatePrice(id, currentPrice) {
+            const newPrice = prompt('Preço de mercado por unidade (€):', currentPrice);
+            if (!newPrice) return;
+            fetch(API + '/api/materials/' + id + '/price', {
+                method: 'PUT', headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+                body: JSON.stringify({ market_price_eur: parseFloat(newPrice) })
+            }).then(() => loadStock());
+        }
+
+        async function loadTreasury() {
+            const res = await fetch(API + '/api/treasury', { headers: { 'Authorization': 'Bearer ' + token } });
+            const data = await res.json();
+            document.getElementById('treasuryStats').innerHTML = `
+                <div class="stat-card"><div class="stat-value">€${data.income.toFixed(2)}</div><div class="stat-label">Entradas</div></div>
+                <div class="stat-card"><div class="stat-value">€${data.expense.toFixed(2)}</div><div class="stat-label">Saídas</div></div>
+                <div class="stat-card"><div class="stat-value">€${data.balance.toFixed(2)}</div><div class="stat-label">Saldo</div></div>
+            `;
+            const tbody = document.querySelector('#treasuryTable tbody');
+            tbody.innerHTML = (data.transactions || []).map(t => `
+                <tr><td>${new Date(t.date).toLocaleDateString('pt-PT')}</td><td>${t.description}</td>
+                    <td><span class="badge badge-${t.type==='income'?'purchase':'sale'}">${t.type==='income'?'Entrada':'Saída'}</span></td>
+                    <td>${t.currency} ${parseFloat(t.amount).toFixed(2)}</td><td>${t.currency}</td><td>${t.reference}</td></tr>
+            `).join('') || '<tr><td colspan="6">Sem movimentos</td></tr>';
         }
 
         async function loadClients() {
@@ -331,32 +327,69 @@ function showAddMaterial() {
             const data = await res.json();
             const tbody = document.querySelector('#clientsTable tbody');
             tbody.innerHTML = data.map(c => `
-                <tr>
-                    <td>${c.name}</td><td>${c.email || '-'}</td><td>${c.phone || '-'}</td>
-                    <td>€${parseFloat(c.total_purchases || 0).toFixed(2)}</td>
-                </tr>`).join('') || '<tr><td colspan="4">Sem clientes</td></tr>';
+                <tr><td>${c.name}</td><td>${c.email || '-'}</td><td>${c.phone || '-'}</td><td>€${parseFloat(c.total_purchases||0).toFixed(2)}</td></tr>
+            `).join('') || '<tr><td colspan="4">Sem clientes</td></tr>';
         }
 
         async function loadMaterialsForSelect() {
             const res = await fetch(API + '/api/materials', { headers: { 'Authorization': 'Bearer ' + token } });
             const data = await res.json();
             const select = document.getElementById('materialId');
+            const currentVal = select.value;
             select.innerHTML = '<option value="">Selecione...</option>' + data.map(m => `<option value="${m.id}">${m.name} (${m.code})</option>`).join('');
+            if (currentVal) select.value = currentVal;
+        }
+
+        async function seedMaterials() {
+            const res = await fetch(API + '/api/materials/seed', { method: 'POST', headers: { 'Authorization': 'Bearer ' + token } });
+            if (res.ok) { alert('Materiais criados! ✅'); loadStock(); }
+        }
+
+        function showAddMaterial() {
+            const name = prompt('Nome do material:');
+            if (!name) return;
+            const code = prompt('Código (ex: AU24K):');
+            if (!code) return;
+            const type = prompt('Tipo (metal ou gem):');
+            const subtype = prompt('Subtipo (ex: Ouro, Diamante):');
+            const unit = prompt('Unidade (g ou ct):');
+            const price = prompt('Preço mercado (€):', '0');
+            fetch(API + '/api/materials', {
+                method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+                body: JSON.stringify({ code, name, type, subtype, unit, market_price_eur: parseFloat(price) || 0 })
+            }).then(() => loadStock());
         }
 
         function showModal(id) {
             document.getElementById(id).classList.add('active');
             if (id === 'transactionModal') {
+                if (!document.getElementById('editId').value) {
+                    document.getElementById('modalTitle').textContent = 'Nova Transação';
+                    document.getElementById('submitBtn').textContent = 'Registar Transação';
+                    document.getElementById('transactionForm').reset();
+                }
                 loadMaterialsForSelect();
                 document.getElementById('transactionDate').value = new Date().toISOString().split('T')[0];
             }
         }
 
-        function closeModal(id) { document.getElementById(id).classList.remove('active'); }
+        function closeModal(id) {
+            document.getElementById(id).classList.remove('active');
+            document.getElementById('editId').value = '';
+        }
 
-        document.getElementById('weightGrams').addEventListener('input', calcTotal);
-        document.getElementById('weightCarats').addEventListener('input', calcTotal);
-        document.getElementById('pricePerUnit').addEventListener('input', calcTotal);
+        document.querySelectorAll('.currency-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                document.querySelectorAll('.currency-btn').forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+                document.getElementById('currency').value = this.dataset.currency;
+                calcTotal();
+            });
+        });
+
+        ['weightGrams','weightCarats','pricePerUnit'].forEach(id => {
+            document.getElementById(id).addEventListener('input', calcTotal);
+        });
 
         function calcTotal() {
             const g = parseFloat(document.getElementById('weightGrams').value) || 0;
@@ -367,13 +400,16 @@ function showAddMaterial() {
 
         document.getElementById('transactionForm').addEventListener('submit', async (e) => {
             e.preventDefault();
+            const editId = document.getElementById('editId').value;
             const body = {
                 material_id: document.getElementById('materialId').value,
                 type: document.getElementById('type').value,
+                lot_number: document.getElementById('lotNumber').value,
                 weight_grams: parseFloat(document.getElementById('weightGrams').value) || 0,
                 weight_carats: parseFloat(document.getElementById('weightCarats').value) || 0,
                 price_per_unit: parseFloat(document.getElementById('pricePerUnit').value),
                 total_price: parseFloat(document.getElementById('totalPrice').value),
+                currency: document.getElementById('currency').value,
                 quality: document.getElementById('quality').value,
                 origin: document.getElementById('origin').value,
                 client_name: document.getElementById('clientName').value,
@@ -381,15 +417,20 @@ function showAddMaterial() {
                 transaction_date: document.getElementById('transactionDate').value,
                 notes: document.getElementById('notes').value
             };
-            const res = await fetch(API + '/api/transactions', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+            
+            const url = editId ? API + '/api/transactions/' + editId : API + '/api/transactions';
+            const method = editId ? 'PUT' : 'POST';
+            
+            const res = await fetch(url, {
+                method, headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
                 body: JSON.stringify(body)
             });
+            
             if (res.ok) {
-                alert('Transação registada! ✅');
+                alert(editId ? 'Transação atualizada! ✅' : 'Transação registada! ✅');
                 closeModal('transactionModal');
                 loadDashboard();
+                loadTransactions();
             } else {
                 const err = await res.json();
                 alert('Erro: ' + err.error);
@@ -406,22 +447,16 @@ function showAddMaterial() {
                 nif: document.getElementById('newClientNif').value
             };
             const res = await fetch(API + '/api/clients', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+                method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
                 body: JSON.stringify(body)
             });
-            if (res.ok) {
-                alert('Cliente guardado! ✅');
-                closeModal('clientModal');
-                loadClients();
-            } else {
-                alert('Erro ao guardar cliente');
-            }
+            if (res.ok) { alert('Cliente guardado! ✅'); closeModal('clientModal'); loadClients(); }
         });
 
         if (token) {
             document.getElementById('loginScreen').style.display = 'none';
             document.getElementById('appScreen').style.display = 'block';
+            loadRates();
             loadDashboard();
         }
     </script>
