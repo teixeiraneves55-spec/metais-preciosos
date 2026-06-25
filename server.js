@@ -499,26 +499,16 @@ async function fetchMetalPrices() {
 
 app.get('/api/market-prices', authMiddleware, async (req, res) => {
   try {
-    // Preços manuais atualizados (26 Jun 2025)
-    // Estes valores são atualizados quando a API grátis funciona
+    // Preços de referência atualizados manualmente
+    // Atualize estes valores conforme o mercado
     const marketPrices = {
-      gold: 71.50,      // €/grama Ouro 24K
-      silver: 0.82,     // €/grama Prata
-      platinum: 30.50,  // €/grama Platina
+      gold: 72.00,
+      silver: 0.85,
+      platinum: 31.00,
       updated: new Date().toISOString(),
-      source: 'Valores de referência de mercado'
+      source: 'Valores de referência (atualize manualmente)'
     };
     
-    // Tentar obter da API primeiro
-    const apiData = await fetchMetalPrices();
-    
-    if (apiData && apiData.price) {
-      const ounceToGram = 31.1035;
-      marketPrices.gold = apiData.price / ounceToGram;
-      marketPrices.source = 'GoldAPI.io (tempo real)';
-    }
-    
-    // Atualizar materiais na BD
     if (marketPrices.gold) {
       await pool.query("UPDATE materials SET market_price_eur = ROUND($1::numeric, 2) WHERE subtype = 'Ouro' AND code = 'AU24K'", [marketPrices.gold]);
       await pool.query("UPDATE materials SET market_price_eur = ROUND(($1 * 0.916)::numeric, 2) WHERE subtype = 'Ouro' AND code = 'AU22K'", [marketPrices.gold]);
