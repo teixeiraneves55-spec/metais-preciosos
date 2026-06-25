@@ -1,296 +1,553 @@
-require('dotenv').config();
-const express = require('express');
-const cors = require('cors');
-const { Pool } = require('pg');
-const bcrypt = require('bcryptjs');
-const jwt = require('jsonwebtoken');
-const path = require('path');
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Metais & Pedras Preciosas</title>
+    <style>
+        *{margin:0;padding:0;box-sizing:border-box}
+        body{font-family:Arial,sans-serif;background:#1a1a2e;color:#e0e0e0;min-height:100vh}
+        .login-container{display:flex;align-items:center;justify-content:center;min-height:100vh;padding:20px}
+        .login-card{background:#16213e;padding:40px;border-radius:15px;border:1px solid #c9a84c;width:100%;max-width:400px}
+        .login-card h1{color:#c9a84c;text-align:center;margin-bottom:5px}
+        .login-card p{text-align:center;color:#a0a0a0;margin-bottom:25px;font-size:14px}
+        .form-group{margin-bottom:15px}
+        .form-group label{display:block;margin-bottom:5px;color:#c9a84c;font-weight:bold}
+        input,select,textarea{width:100%;padding:12px;border:1px solid #c9a84c;border-radius:8px;background:#1a1a2e;color:#e0e0e0;font-size:14px}
+        button{width:100%;padding:14px;background:#c9a84c;color:#1a1a2e;border:none;border-radius:8px;font-size:16px;font-weight:bold;cursor:pointer}
+        button:hover{background:#b8960f}
+        .header{background:#16213e;padding:15px 20px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #c9a84c;flex-wrap:wrap;gap:10px}
+        .header h2{color:#c9a84c;font-size:18px}
+        .nav-bar{position:fixed;bottom:0;left:0;right:0;background:#16213e;display:flex;justify-content:space-around;padding:10px;border-top:1px solid #c9a84c;z-index:100}
+        .nav-item{color:#a0a0a0;cursor:pointer;padding:8px 12px;border-radius:8px;text-align:center;font-size:11px}
+        .nav-item.active{color:#c9a84c;background:rgba(201,168,76,0.1)}
+        .main-content{padding:20px;padding-bottom:80px;max-width:1200px;margin:0 auto}
+        .page{display:none}
+        .page.active{display:block}
+        .stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:15px;margin-bottom:20px}
+        .stat-card{background:#16213e;padding:20px;border-radius:12px;border:1px solid rgba(201,168,76,0.3);text-align:center}
+        .stat-value{font-size:24px;font-weight:bold;color:#c9a84c}
+        .stat-label{font-size:11px;color:#a0a0a0;margin-top:5px}
+        .card{background:#16213e;border-radius:12px;padding:20px;margin-bottom:15px;border:1px solid rgba(201,168,76,0.2)}
+        .card h3{color:#c9a84c;margin-bottom:15px}
+        table{width:100%;border-collapse:collapse;font-size:13px}
+        th,td{padding:10px;text-align:left;border-bottom:1px solid rgba(255,255,255,0.1)}
+        th{color:#c9a84c;font-size:12px}
+        .badge{padding:4px 10px;border-radius:15px;font-size:11px}
+        .badge-purchase{background:rgba(76,175,80,0.2);color:#4caf50}
+        .badge-sale{background:rgba(244,67,54,0.2);color:#f44336}
+        .btn{padding:8px 14px;border-radius:6px;border:none;cursor:pointer;font-size:12px;margin:2px;width:auto}
+        .btn-primary{background:#c9a84c;color:#1a1a2e}
+        .btn-danger{background:#f44336;color:white}
+        .btn-info{background:#2196f3;color:white}
+        .btn-warning{background:#ff9800;color:white}
+        .btn-sm{padding:5px 10px;font-size:11px}
+        .modal{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.8);z-index:1000;align-items:center;justify-content:center}
+        .modal.active{display:flex}
+        .modal-content{background:#16213e;border-radius:15px;padding:25px;max-width:550px;width:90%;max-height:90vh;overflow-y:auto}
+        .modal-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px}
+        .close-btn{background:none;border:none;color:#e0e0e0;font-size:24px;cursor:pointer}
+        .table-container{overflow-x:auto}
+        .currency-selector{display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap}
+        .currency-btn{padding:6px 12px;border:1px solid #c9a84c;background:transparent;color:#c9a84c;border-radius:15px;cursor:pointer;font-size:12px}
+        .currency-btn.active{background:#c9a84c;color:#1a1a2e}
+        .text-green{color:#4caf50}
+        .text-red{color:#f44336}
+    </style>
+</head>
+<body>
+<div id="loginScreen" class="login-container">
+    <div class="login-card">
+        <h1>💎 Metais & Pedras</h1>
+        <p>Sistema Profissional de Gestão</p>
+        <form id="loginForm">
+            <div class="form-group"><label>Email</label><input type="email" id="loginEmail" value="admin@metaispreciosos.pt" required></div>
+            <div class="form-group"><label>Senha</label><input type="password" id="loginPassword" value="Admin123!" required></div>
+            <button type="submit">Entrar</button>
+        </form>
+    </div>
+</div>
 
-const app = express();
-const PORT = process.env.PORT || 3000;
+<div id="appScreen" style="display:none">
+    <div class="header">
+        <h2>💎 Metais & Pedras</h2>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+            <button class="btn btn-primary btn-sm" onclick="showModal('transactionModal')">+ Transação</button>
+            <button class="btn btn-warning btn-sm" onclick="showPriceModal()">💲 Preços</button>
+            <button class="btn btn-info btn-sm" onclick="showPage('treasury')">🏦 Tesouraria</button>
+            <button class="btn btn-danger btn-sm" onclick="logout()">Sair</button>
+        </div>
+    </div>
+    <div class="main-content">
+        <div id="dashboardPage" class="page active">
+            <div class="stats-grid" id="dashboardStats"></div>
+            <div class="card"><h3>🕐 Últimas Transações</h3><div class="table-container"><table id="recentTable"><thead><tr><th>Código</th><th>Lote</th><th>Material</th><th>Tipo</th><th>Valor</th><th>Data</th></tr></thead><tbody></tbody></table></div></div>
+        </div>
+        <div id="transactionsPage" class="page">
+            <div class="card"><h3>📋 Histórico</h3><div class="table-container"><table id="transactionsTable"><thead><tr><th>Código</th><th>Lote</th><th>Material</th><th>Tipo</th><th>Peso</th><th>Preço/u</th><th>Total</th><th>Moeda</th><th>Cliente</th><th>Data</th><th>Ações</th></tr></thead><tbody></tbody></table></div></div>
+        </div>
+        <div id="stockPage" class="page">
+            <div class="card"><h3>💎 Stock</h3>
+                <div style="margin-bottom:15px;display:flex;gap:8px;flex-wrap:wrap">
+                    <button class="btn btn-info btn-sm" onclick="showAddMaterial()">+ Material</button>
+                </div>
+                <div class="table-container"><table id="stockTable"><thead><tr><th>Código</th><th>Nome</th><th>Tipo</th><th>Gramas</th><th>Quilates</th><th>Preço Mercado</th><th>Valor (80%)</th><th>Ações</th></tr></thead><tbody></tbody></table></div>
+            </div>
+        </div>
+        <div id="clientsPage" class="page">
+            <div class="card"><h3>👥 Clientes</h3>
+                <button class="btn btn-primary btn-sm" onclick="showModal('clientModal')" style="margin-bottom:15px">+ Novo Cliente</button>
+                <div class="table-container"><table id="clientsTable"><thead><tr><th>Nome</th><th>Email</th><th>Telefone</th><th>Total Compras</th></tr></thead><tbody></tbody></table></div>
+            </div>
+        </div>
+        <div id="treasuryPage" class="page">
+            <div class="stats-grid" id="treasuryStats"></div>
+            <div class="card"><h3>🏦 Tesouraria</h3><div class="table-container"><table id="treasuryTable"><thead><tr><th>Data</th><th>Descrição</th><th>Tipo</th><th>Valor</th><th>Moeda</th><th>Ref</th></tr></thead><tbody></tbody></table></div></div>
+        </div>
+    </div>
+    <div class="nav-bar">
+        <div class="nav-item active" onclick="showPage('dashboard')">📊 Dashboard</div>
+        <div class="nav-item" onclick="showPage('transactions')">📋 Transações</div>
+        <div class="nav-item" onclick="showPage('stock')">💎 Stock</div>
+        <div class="nav-item" onclick="showPage('clients')">👥 Clientes</div>
+        <div class="nav-item" onclick="showPage('treasury')">🏦 Tesouraria</div>
+    </div>
+</div>
 
-const pool = new Pool({
-  connectionString: process.env.DATABASE_URL,
-  ssl: { rejectUnauthorized: false }
-});
+<div id="transactionModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header"><h3 id="modalTitle">Nova Transação</h3><button class="close-btn" onclick="closeModal('transactionModal')">✕</button></div>
+        <form id="transactionForm">
+            <input type="hidden" id="editId">
+            <div class="form-group"><label>Material *</label><select id="materialId" required></select></div>
+            <div class="form-group"><label>Tipo *</label><select id="type" required><option value="purchase">Compra</option><option value="sale">Venda</option></select></div>
+            <div class="form-group"><label>Nº Lote</label><input type="text" id="lotNumber" placeholder="Ex: LOTE-2026-001"></div>
+            <div class="form-group"><label>Peso (gramas)</label><input type="number" id="weightGrams" step="0.001" placeholder="0.000"></div>
+            <div class="form-group"><label>Peso (quilates)</label><input type="number" id="weightCarats" step="0.001" placeholder="0.000"></div>
+            <div class="form-group"><label>Preço por Unidade *</label><input type="number" id="pricePerUnit" step="0.01" required></div>
+            <div class="form-group"><label>Preço Total</label><input type="number" id="totalPrice" step="0.01" readonly></div>
+            <div class="form-group"><label>Moeda</label>
+                <div class="currency-selector">
+                    <span class="currency-btn active" data-currency="EUR">€ EUR</span>
+                    <span class="currency-btn" data-currency="USD">$ USD</span>
+                    <span class="currency-btn" data-currency="FCFA">FCFA</span>
+                </div>
+                <input type="hidden" id="currency" value="EUR">
+            </div>
+            <div class="form-group"><label>Qualidade</label><select id="quality"><option value="">Selecione</option><option value="24K">24K</option><option value="22K">22K</option><option value="20K">20K</option><option value="18K">18K</option><option value="AAA">AAA</option><option value="AA">AA</option></select></div>
+            <div class="form-group"><label>Origem</label><input type="text" id="origin" placeholder="Ex: Camarões, Brasil, África do Sul"></div>
+            <div class="form-group"><label>Cliente</label><input type="text" id="clientName" placeholder="Nome do cliente"></div>
+            <div class="form-group"><label>Pagamento</label><select id="paymentMethod"><option value="cash">Dinheiro</option><option value="card">Cartão</option><option value="transfer">Transferência</option><option value="mbway">MB WAY</option></select></div>
+            <div class="form-group"><label>Data *</label><input type="date" id="transactionDate" required></div>
+            <div class="form-group"><label>Observações</label><textarea id="notes" rows="2"></textarea></div>
+            <button type="submit" id="submitBtn">Registar Transação</button>
+        </form>
+    </div>
+</div>
 
-app.use(cors());
-app.use(express.json());
-app.use(express.static('public'));
+<div id="clientModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header"><h3>Novo Cliente</h3><button class="close-btn" onclick="closeModal('clientModal')">✕</button></div>
+        <form id="clientForm">
+            <div class="form-group"><label>Nome *</label><input type="text" id="newClientName" required></div>
+            <div class="form-group"><label>Email</label><input type="email" id="newClientEmail"></div>
+            <div class="form-group"><label>Telefone</label><input type="text" id="newClientPhone"></div>
+            <div class="form-group"><label>Morada</label><input type="text" id="newClientAddress"></div>
+            <div class="form-group"><label>NIF</label><input type="text" id="newClientNif"></div>
+            <button type="submit">Guardar Cliente</button>
+        </form>
+    </div>
+</div>
 
-const exchangeRates = { EUR: 1, USD: 1.08, FCFA: 655.96 };
-
-async function initDB() {
-  const client = await pool.connect();
-  try {
-    // Recriar tabelas com estrutura correta
-    await client.query(`DROP TABLE IF EXISTS treasury CASCADE`);
-    await client.query(`DROP TABLE IF EXISTS transactions CASCADE`);
-    await client.query(`DROP TABLE IF EXISTS materials CASCADE`);
-    await client.query(`DROP TABLE IF EXISTS clients CASCADE`);
-    await client.query(`DROP TABLE IF EXISTS users CASCADE`);
-
-    await client.query(`CREATE TABLE users (id SERIAL PRIMARY KEY, name TEXT NOT NULL, email TEXT UNIQUE NOT NULL, password TEXT NOT NULL, role TEXT DEFAULT 'user', created_at TIMESTAMP DEFAULT NOW())`);
-    await client.query(`CREATE TABLE materials (id SERIAL PRIMARY KEY, code TEXT UNIQUE NOT NULL, name TEXT NOT NULL, type TEXT NOT NULL, subtype TEXT, stock_grams DECIMAL(10,3) DEFAULT 0, stock_carats DECIMAL(10,3) DEFAULT 0, unit TEXT DEFAULT 'g', market_price_eur DECIMAL(10,2) DEFAULT 0)`);
-    await client.query(`CREATE TABLE clients (id SERIAL PRIMARY KEY, name TEXT NOT NULL, email TEXT, phone TEXT, address TEXT, nif TEXT, total_purchases DECIMAL(12,2) DEFAULT 0, created_at TIMESTAMP DEFAULT NOW())`);
-    await client.query(`CREATE TABLE transactions (id SERIAL PRIMARY KEY, code TEXT UNIQUE NOT NULL, lot_number TEXT, material_id INTEGER REFERENCES materials(id), type TEXT NOT NULL, weight_grams DECIMAL(10,3) DEFAULT 0, weight_carats DECIMAL(10,3) DEFAULT 0, price_per_unit DECIMAL(10,2) NOT NULL, total_price DECIMAL(12,2) NOT NULL, currency TEXT DEFAULT 'EUR', total_price_eur DECIMAL(12,2) DEFAULT 0, quality TEXT, origin TEXT, client_name TEXT, payment_method TEXT DEFAULT 'cash', notes TEXT, transaction_date DATE NOT NULL, created_at TIMESTAMP DEFAULT NOW(), updated_at TIMESTAMP DEFAULT NOW())`);
-    await client.query(`CREATE TABLE treasury (id SERIAL PRIMARY KEY, date DATE NOT NULL, description TEXT, type TEXT NOT NULL, amount DECIMAL(12,2) NOT NULL, currency TEXT DEFAULT 'EUR', amount_eur DECIMAL(12,2) DEFAULT 0, category TEXT DEFAULT 'Materiais', reference TEXT, created_at TIMESTAMP DEFAULT NOW())`);
-
-    // Admin
-    const hashedPassword = await bcrypt.hash('Admin123!', 10);
-    await client.query('INSERT INTO users (name, email, password, role) VALUES ($1,$2,$3,$4) ON CONFLICT (email) DO NOTHING', ['Administrador', 'admin@metaispreciosos.pt', hashedPassword, 'admin']);
-
-    // Materiais padrão
-    const mats = [
-      ['AU24K','Ouro 24K','metal','Ouro','g',72],
-      ['AU22K','Ouro 22K','metal','Ouro','g',66],
-      ['AU20K','Ouro 20K','metal','Ouro','g',60],
-      ['AU18K','Ouro 18K','metal','Ouro','g',54],
-      ['SAF01','Safira Azul','gem','Safira','ct',500],
-      ['SAF02','Safira Rosa','gem','Safira','ct',600],
-      ['DIA01','Diamante 1ct','gem','Diamante','ct',5000],
-      ['DIA02','Diamante 0.5ct','gem','Diamante','ct',2000]
-    ];
-    for (const m of mats) {
-      await client.query('INSERT INTO materials (code, name, type, subtype, unit, market_price_eur) VALUES ($1,$2,$3,$4,$5,$6) ON CONFLICT (code) DO UPDATE SET market_price_eur = $6', m);
-    }
-
-    console.log('DB recriada com sucesso');
-  } catch(e) {
-    console.error('Erro DB:', e);
-  } finally { client.release(); }
-}
+<script>
+const API='';
+let token=localStorage.getItem('token');
 
 // LOGIN
-app.post('/api/auth/login', async (req, res) => {
-  try {
-    const { email, password } = req.body;
-    const result = await pool.query('SELECT * FROM users WHERE email = $1', [email]);
-    const user = result.rows[0];
-    if (!user) return res.status(401).json({ error: 'Email ou senha incorretos' });
-    const valid = await bcrypt.compare(password, user.password);
-    if (!valid) return res.status(401).json({ error: 'Email ou senha incorretos' });
-    const token = jwt.sign({ id: user.id, email: user.email, role: user.role }, process.env.JWT_SECRET || 'segredo123', { expiresIn: '30d' });
-    res.json({ token, user: { id: user.id, name: user.name, email: user.email, role: user.role } });
-  } catch (e) { res.status(500).json({ error: 'Erro no servidor' }); }
+document.getElementById('loginForm').addEventListener('submit',async(e)=>{
+    e.preventDefault();
+    try {
+        const res=await fetch(API+'/api/auth/login',{
+            method:'POST',
+            headers:{'Content-Type':'application/json'},
+            body:JSON.stringify({
+                email:document.getElementById('loginEmail').value,
+                password:document.getElementById('loginPassword').value
+            })
+        });
+        const data=await res.json();
+        if(res.ok){
+            token=data.token;
+            localStorage.setItem('token',token);
+            document.getElementById('loginScreen').style.display='none';
+            document.getElementById('appScreen').style.display='block';
+            loadDashboard();
+        } else {
+            alert('❌ '+ (data.error || 'Erro no login'));
+        }
+    } catch(err) {
+        alert('Erro de conexão. Verifique sua internet.');
+    }
 });
 
-function auth(req, res, next) {
-  const token = req.headers.authorization?.split(' ')[1];
-  if (!token) return res.status(401).json({ error: 'Não autorizado' });
-  try {
-    req.user = jwt.verify(token, process.env.JWT_SECRET || 'segredo123');
-    next();
-  } catch (e) { res.status(401).json({ error: 'Token inválido' }); }
+function logout(){
+    localStorage.removeItem('token');
+    token=null;
+    document.getElementById('appScreen').style.display='none';
+    document.getElementById('loginScreen').style.display='flex';
 }
 
-app.get('/api/exchange-rates', auth, (req, res) => res.json(exchangeRates));
+function showPage(p){
+    document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));
+    document.getElementById(p+'Page').classList.add('active');
+    document.querySelectorAll('.nav-item').forEach(x=>x.classList.remove('active'));
+    event.target.classList.add('active');
+    if(p==='dashboard')loadDashboard();
+    if(p==='transactions')loadTransactions();
+    if(p==='stock')loadStock();
+    if(p==='clients')loadClients();
+    if(p==='treasury')loadTreasury();
+}
 
 // DASHBOARD
-app.get('/api/dashboard', auth, async (req, res) => {
-  try {
-    const sr = await pool.query('SELECT COUNT(*) as c FROM materials');
-    const ms = new Date(); ms.setDate(1); ms.setHours(0,0,0,0);
-    const md = ms.toISOString().split('T')[0];
-    const mr = await pool.query("SELECT type, COALESCE(SUM(total_price_eur),0) as t FROM transactions WHERE transaction_date >= $1 GROUP BY type", [md]);
-    const rr = await pool.query("SELECT t.*, m.name as mn FROM transactions t JOIN materials m ON t.material_id = m.id ORDER BY t.created_at DESC LIMIT 10");
-    const tr = await pool.query("SELECT type, COALESCE(SUM(amount_eur),0) as t FROM treasury WHERE date >= $1 GROUP BY type", [md]);
-    const inc = parseFloat(tr.rows.find(r => r.type === 'income')?.t || 0);
-    const exp = parseFloat(tr.rows.find(r => r.type === 'expense')?.t || 0);
-    res.json({
-      totalItems: parseInt(sr.rows[0].c),
-      monthPurchases: parseFloat(mr.rows.find(r => r.type === 'purchase')?.t || 0),
-      monthSales: parseFloat(mr.rows.find(r => r.type === 'sale')?.t || 0),
-      treasuryBalance: inc - exp,
-      recentTransactions: rr.rows
-    });
-  } catch (e) { console.error(e); res.status(500).json({ error: 'Erro' }); }
-});
-
-// MATERIAIS
-app.get('/api/materials', auth, async (req, res) => {
-  try { const r = await pool.query('SELECT * FROM materials ORDER BY name'); res.json(r.rows); }
-  catch (e) { res.status(500).json({ error: 'Erro' }); }
-});
-
-app.post('/api/materials', auth, async (req, res) => {
-  try {
-    const { code, name, type, subtype, unit, market_price_eur } = req.body;
-    const r = await pool.query('INSERT INTO materials (code, name, type, subtype, unit, market_price_eur) VALUES ($1,$2,$3,$4,$5,$6) RETURNING *', [code, name, type, subtype, unit, parseFloat(market_price_eur) || 0]);
-    res.status(201).json(r.rows[0]);
-  } catch (e) { res.status(500).json({ error: 'Erro' }); }
-});
-
-app.put('/api/materials/:id/price', auth, async (req, res) => {
-  try {
-    await pool.query('UPDATE materials SET market_price_eur = $1 WHERE id = $2', [parseFloat(req.body.market_price_eur), req.params.id]);
-    res.json({ message: 'OK' });
-  } catch (e) { res.status(500).json({ error: 'Erro' }); }
-});
-
-// STOCK VALUE
-app.get('/api/stock-value', auth, async (req, res) => {
-  try {
-    const r = await pool.query('SELECT * FROM materials ORDER BY name');
-    const mats = r.rows.map(m => {
-      const tw = parseFloat(m.stock_grams || 0) + parseFloat(m.stock_carats || 0) * 0.2;
-      const mv = tw * parseFloat(m.market_price_eur || 0);
-      return { ...m, estimatedValue: (mv * 0.8).toFixed(2), marketPrice: parseFloat(m.market_price_eur).toFixed(2) };
-    });
-    res.json(mats);
-  } catch (e) { res.status(500).json({ error: 'Erro' }); }
-});
+async function loadDashboard(){
+    try {
+        const res=await fetch(API+'/api/dashboard',{headers:{'Authorization':'Bearer '+token}});
+        const d=await res.json();
+        document.getElementById('dashboardStats').innerHTML=
+            '<div class="stat-card"><div class="stat-value">'+(d.totalItems||0)+'</div><div class="stat-label">Itens Stock</div></div>'+
+            '<div class="stat-card"><div class="stat-value text-red">€'+(d.monthPurchases||0).toFixed(2)+'</div><div class="stat-label">Compras Mês</div></div>'+
+            '<div class="stat-card"><div class="stat-value text-green">€'+(d.monthSales||0).toFixed(2)+'</div><div class="stat-label">Vendas Mês</div></div>'+
+            '<div class="stat-card"><div class="stat-value">€'+(d.treasuryBalance||0).toFixed(2)+'</div><div class="stat-label">Saldo Tesouraria</div></div>';
+        
+        const tbody=document.querySelector('#recentTable tbody');
+        tbody.innerHTML=(d.recentTransactions||[]).map(t=>
+            '<tr><td>'+t.code+'</td><td>'+(t.lot_number||'-')+'</td><td>'+t.mn+'</td>'+
+            '<td><span class="badge badge-'+(t.type==='purchase'?'purchase':'sale')+'">'+(t.type==='purchase'?'Compra':'Venda')+'</span></td>'+
+            '<td>'+t.currency+' '+parseFloat(t.total_price).toFixed(2)+'</td>'+
+            '<td>'+new Date(t.transaction_date).toLocaleDateString('pt-PT')+'</td></tr>'
+        ).join('')||'<tr><td colspan="6">Sem transações</td></tr>';
+    } catch(e) { console.error(e); }
+}
 
 // TRANSAÇÕES
-app.get('/api/transactions', auth, async (req, res) => {
-  try {
-    const r = await pool.query("SELECT t.*, m.name as mn FROM transactions t JOIN materials m ON t.material_id = m.id ORDER BY t.transaction_date DESC, t.created_at DESC LIMIT 200");
-    res.json(r.rows);
-  } catch (e) { res.status(500).json({ error: 'Erro' }); }
-});
+async function loadTransactions(){
+    try {
+        const res=await fetch(API+'/api/transactions',{headers:{'Authorization':'Bearer '+token}});
+        const data=await res.json();
+        const tbody=document.querySelector('#transactionsTable tbody');
+        tbody.innerHTML=data.map(t=>
+            '<tr><td>'+t.code+'</td><td>'+(t.lot_number||'-')+'</td><td>'+t.mn+'</td>'+
+            '<td><span class="badge badge-'+(t.type==='purchase'?'purchase':'sale')+'">'+(t.type==='purchase'?'Compra':'Venda')+'</span></td>'+
+            '<td>'+(t.weight_grams||t.weight_carats||'0')+'</td>'+
+            '<td>'+t.currency+' '+parseFloat(t.price_per_unit||0).toFixed(2)+'</td>'+
+            '<td>'+t.currency+' '+parseFloat(t.total_price).toFixed(2)+'</td>'+
+            '<td>'+t.currency+'</td><td>'+(t.client_name||'-')+'</td>'+
+            '<td>'+new Date(t.transaction_date).toLocaleDateString('pt-PT')+'</td>'+
+            '<td><button class="btn btn-info btn-sm" onclick="editTransaction('+t.id+')">✏️</button> '+
+            '<button class="btn btn-danger btn-sm" onclick="deleteTransaction('+t.id+')">🗑️</button></td></tr>'
+        ).join('')||'<tr><td colspan="11">Sem transações</td></tr>';
+    } catch(e) { console.error(e); }
+}
 
-app.get('/api/transactions/:id', auth, async (req, res) => {
-  try {
-    const r = await pool.query('SELECT * FROM transactions WHERE id = $1', [req.params.id]);
-    if (r.rows.length === 0) return res.status(404).json({ error: 'Não encontrada' });
-    res.json(r.rows[0]);
-  } catch (e) { res.status(500).json({ error: 'Erro' }); }
-});
+async function editTransaction(id){
+    try {
+        const res=await fetch(API+'/api/transactions/'+id,{headers:{'Authorization':'Bearer '+token}});
+        const t=await res.json();
+        document.getElementById('modalTitle').textContent='Editar Transação';
+        document.getElementById('editId').value=t.id;
+        document.getElementById('materialId').value=t.material_id;
+        document.getElementById('type').value=t.type;
+        document.getElementById('lotNumber').value=t.lot_number||'';
+        document.getElementById('weightGrams').value=t.weight_grams||'';
+        document.getElementById('weightCarats').value=t.weight_carats||'';
+        document.getElementById('pricePerUnit').value=t.price_per_unit;
+        document.getElementById('totalPrice').value=t.total_price;
+        document.getElementById('currency').value=t.currency;
+        document.getElementById('quality').value=t.quality||'';
+        document.getElementById('origin').value=t.origin||'';
+        document.getElementById('clientName').value=t.client_name||'';
+        document.getElementById('paymentMethod').value=t.payment_method||'cash';
+        document.getElementById('transactionDate').value=t.transaction_date;
+        document.getElementById('notes').value=t.notes||'';
+        document.getElementById('submitBtn').textContent='Atualizar Transação';
+        document.querySelectorAll('.currency-btn').forEach(b=>b.classList.remove('active'));
+        const ab=document.querySelector('[data-currency="'+t.currency+'"]');
+        if(ab)ab.classList.add('active');
+        loadMaterialsForSelect();
+        showModal('transactionModal');
+    } catch(e) { console.error(e); }
+}
 
-app.post('/api/transactions', auth, async (req, res) => {
-  const client = await pool.connect();
-  try {
-    const b = req.body;
-    const totalPriceEur = parseFloat(b.total_price) / (exchangeRates[b.currency] || 1);
-    const prefix = b.type === 'purchase' ? 'COMPRA' : 'VENDA';
-    const ds = b.transaction_date.replace(/-/g, '');
-    const cr = await client.query('SELECT COUNT(*) as c FROM transactions WHERE transaction_date = $1', [b.transaction_date]);
-    const code = prefix + '-' + ds + '-' + (parseInt(cr.rows[0].c) + 1).toString().padStart(4, '0');
-    const lot = b.lot_number || 'LOTE-' + ds + '-' + Math.floor(Math.random() * 1000).toString().padStart(3, '0');
+async function deleteTransaction(id){
+    if(!confirm('Eliminar esta transação?'))return;
+    try {
+        const res=await fetch(API+'/api/transactions/'+id,{method:'DELETE',headers:{'Authorization':'Bearer '+token}});
+        if(res.ok){alert('✅ Eliminada!');loadTransactions();loadDashboard();}
+        else alert('Erro ao eliminar');
+    } catch(e) { alert('Erro de conexão'); }
+}
 
-    await client.query('BEGIN');
+// STOCK
+async function loadStock(){
+    try {
+        const res=await fetch(API+'/api/stock-value',{headers:{'Authorization':'Bearer '+token}});
+        const data=await res.json();
+        const tbody=document.querySelector('#stockTable tbody');
+        tbody.innerHTML=data.map(m=>
+            '<tr><td>'+(m.code||'-')+'</td><td>'+m.name+'</td><td>'+m.type+'</td>'+
+            '<td>'+(m.stock_grams||0)+'g</td><td>'+(m.stock_carats||0)+'ct</td>'+
+            '<td>€'+parseFloat(m.marketPrice||0).toFixed(2)+'</td>'+
+            '<td><strong>€'+m.estimatedValue+'</strong></td>'+
+            '<td><button class="btn btn-info btn-sm" onclick="updatePrice('+m.id+','+parseFloat(m.market_price_eur||0).toFixed(2)+')">💲</button></td></tr>'
+        ).join('')||'<tr><td colspan="8">Sem materiais. Os materiais são criados automaticamente.</td></tr>';
+    } catch(e) { console.error(e); }
+}
 
-    await client.query(
-      'INSERT INTO transactions (code, lot_number, material_id, type, weight_grams, weight_carats, price_per_unit, total_price, currency, total_price_eur, quality, origin, client_name, payment_method, notes, transaction_date) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16)',
-      [code, lot, b.material_id, b.type, parseFloat(b.weight_grams) || 0, parseFloat(b.weight_carats) || 0, parseFloat(b.price_per_unit), parseFloat(b.total_price), b.currency, totalPriceEur, b.quality || '', b.origin || '', b.client_name || '', b.payment_method || 'cash', b.notes || '', b.transaction_date]
-    );
-
-    // Atualizar stock
-    if (b.type === 'purchase') {
-      await client.query('UPDATE materials SET stock_grams = stock_grams + $1, stock_carats = stock_carats + $2 WHERE id = $3', [parseFloat(b.weight_grams) || 0, parseFloat(b.weight_carats) || 0, b.material_id]);
-    } else {
-      await client.query('UPDATE materials SET stock_grams = stock_grams - $1, stock_carats = stock_carats - $2 WHERE id = $3', [parseFloat(b.weight_grams) || 0, parseFloat(b.weight_carats) || 0, b.material_id]);
+function updatePrice(id,cp){
+    const p=prompt('Novo preço de mercado por unidade (€):',cp);
+    if(p && !isNaN(p)){
+        fetch(API+'/api/materials/'+id+'/price',{
+            method:'PUT',
+            headers:{'Content-Type':'application/json','Authorization':'Bearer '+token},
+            body:JSON.stringify({market_price_eur:parseFloat(p)})
+        }).then(()=>loadStock());
     }
+}
 
-    // Tesouraria
-    const tt = b.type === 'purchase' ? 'expense' : 'income';
-    await client.query('INSERT INTO treasury (date, description, type, amount, currency, amount_eur, reference) VALUES ($1,$2,$3,$4,$5,$6,$7)',
-      [b.transaction_date, 'Transação ' + code, tt, parseFloat(b.total_price), b.currency, totalPriceEur, code]);
+function showAddMaterial(){
+    const n=prompt('Nome do material:');
+    if(!n)return;
+    const c=prompt('Código (ex: AU24K):');
+    if(!c)return;
+    const t=prompt('Tipo (metal ou gem):');
+    const s=prompt('Subtipo (ex: Ouro, Diamante):');
+    const u=prompt('Unidade (g ou ct):');
+    const p=prompt('Preço mercado por unidade (€):','0');
+    fetch(API+'/api/materials',{
+        method:'POST',
+        headers:{'Content-Type':'application/json','Authorization':'Bearer '+token},
+        body:JSON.stringify({code:c,name:n,type:t,subtype:s,unit:u,market_price_eur:parseFloat(p)||0})
+    }).then(()=>loadStock());
+}
 
-    await client.query('COMMIT');
-    res.status(201).json({ message: 'OK', code, lot });
-  } catch (e) {
-    await client.query('ROLLBACK');
-    console.error('Erro transação:', e.message);
-    res.status(500).json({ error: 'Erro ao registar: ' + e.message });
-  } finally { client.release(); }
-});
+// PREÇOS
+function showPriceModal(){
+    const modal=document.createElement('div');
+    modal.style.cssText='position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.8);z-index:2000;display:flex;align-items:center;justify-content:center';
+    modal.innerHTML=
+        '<div style="background:#16213e;border-radius:15px;padding:25px;max-width:400px;width:90%;border:1px solid #c9a84c">'+
+        '<h3 style="color:#c9a84c;margin-bottom:20px">💲 Atualizar Preços de Mercado</h3>'+
+        '<div class="form-group"><label>Ouro 24K (€/grama)</label><input type="number" id="newGold" step="0.01" value="72"></div>'+
+        '<div class="form-group"><label>Prata (€/grama)</label><input type="number" id="newSilver" step="0.01" value="0.85"></div>'+
+        '<div class="form-group"><label>Platina (€/grama)</label><input type="number" id="newPlatinum" step="0.01" value="31"></div>'+
+        '<button onclick="savePrices()" style="background:#c9a84c;color:#1a1a2e;width:100%;padding:12px;border:none;border-radius:8px;font-weight:bold;cursor:pointer;margin-bottom:8px">Guardar Preços</button>'+
+        '<button onclick="this.closest(\'div\').parentElement.remove()" style="background:transparent;border:1px solid #f44336;color:#f44336;width:100%;padding:10px;border-radius:8px;cursor:pointer">Cancelar</button>'+
+        '</div>';
+    document.body.appendChild(modal);
+    modal.addEventListener('click',function(e){if(e.target===modal)modal.remove()});
+}
 
-// EDITAR TRANSAÇÃO
-app.put('/api/transactions/:id', auth, async (req, res) => {
-  const client = await pool.connect();
-  try {
-    const b = req.body;
-    const old = await client.query('SELECT * FROM transactions WHERE id = $1', [req.params.id]);
-    if (old.rows.length === 0) return res.status(404).json({ error: 'Não encontrada' });
-    const o = old.rows[0];
-
-    // Reverter stock antigo
-    if (o.type === 'purchase') {
-      await client.query('UPDATE materials SET stock_grams = stock_grams - $1, stock_carats = stock_carats - $2 WHERE id = $3', [parseFloat(o.weight_grams) || 0, parseFloat(o.weight_carats) || 0, o.material_id]);
-    } else {
-      await client.query('UPDATE materials SET stock_grams = stock_grams + $1, stock_carats = stock_carats + $2 WHERE id = $3', [parseFloat(o.weight_grams) || 0, parseFloat(o.weight_carats) || 0, o.material_id]);
+async function savePrices(){
+    const g=parseFloat(document.getElementById('newGold').value)||72;
+    const s=parseFloat(document.getElementById('newSilver').value)||0.85;
+    const p=parseFloat(document.getElementById('newPlatinum').value)||31;
+    
+    try {
+        // Atualizar cada tipo de ouro
+        const materials = [
+            { code: 'AU24K', price: g },
+            { code: 'AU22K', price: g * 0.916 },
+            { code: 'AU20K', price: g * 0.833 },
+            { code: 'AU18K', price: g * 0.75 }
+        ];
+        
+        for (const m of materials) {
+            await fetch(API+'/api/materials/update-by-code', {
+                method:'PUT',
+                headers:{'Content-Type':'application/json','Authorization':'Bearer '+token},
+                body:JSON.stringify({code: m.code, price: m.price})
+            });
+        }
+        
+        alert('✅ Preços atualizados com sucesso!');
+        document.querySelectorAll('body>div').forEach(d=>{
+            if(d.style.position==='fixed'&&d.style.zIndex==='2000')d.remove();
+        });
+        loadStock();
+    } catch(e) {
+        alert('Erro ao atualizar preços');
     }
-    await client.query('DELETE FROM treasury WHERE reference = $1', [o.code]);
-
-    const totalPriceEur = parseFloat(b.total_price) / (exchangeRates[b.currency] || 1);
-
-    await client.query('BEGIN');
-
-    await client.query(
-      'UPDATE transactions SET material_id=$1, type=$2, weight_grams=$3, weight_carats=$4, price_per_unit=$5, total_price=$6, currency=$7, total_price_eur=$8, quality=$9, origin=$10, client_name=$11, payment_method=$12, notes=$13, transaction_date=$14, lot_number=$15, updated_at=NOW() WHERE id=$16',
-      [b.material_id, b.type, parseFloat(b.weight_grams) || 0, parseFloat(b.weight_carats) || 0, parseFloat(b.price_per_unit), parseFloat(b.total_price), b.currency, totalPriceEur, b.quality || '', b.origin || '', b.client_name || '', b.payment_method || 'cash', b.notes || '', b.transaction_date, b.lot_number, req.params.id]
-    );
-
-    // Novo stock
-    if (b.type === 'purchase') {
-      await client.query('UPDATE materials SET stock_grams = stock_grams + $1, stock_carats = stock_carats + $2 WHERE id = $3', [parseFloat(b.weight_grams) || 0, parseFloat(b.weight_carats) || 0, b.material_id]);
-    } else {
-      await client.query('UPDATE materials SET stock_grams = stock_grams - $1, stock_carats = stock_carats - $2 WHERE id = $3', [parseFloat(b.weight_grams) || 0, parseFloat(b.weight_carats) || 0, b.material_id]);
-    }
-
-    const tt = b.type === 'purchase' ? 'expense' : 'income';
-    await client.query('INSERT INTO treasury (date, description, type, amount, currency, amount_eur, reference) VALUES ($1,$2,$3,$4,$5,$6,$7)',
-      [b.transaction_date, 'Transação ' + o.code + ' (edit)', tt, parseFloat(b.total_price), b.currency, totalPriceEur, o.code]);
-
-    await client.query('COMMIT');
-    res.json({ message: 'OK' });
-  } catch (e) {
-    await client.query('ROLLBACK');
-    console.error('Erro update:', e.message);
-    res.status(500).json({ error: 'Erro: ' + e.message });
-  } finally { client.release(); }
-});
-
-// APAGAR TRANSAÇÃO
-app.delete('/api/transactions/:id', auth, async (req, res) => {
-  const client = await pool.connect();
-  try {
-    const old = await client.query('SELECT * FROM transactions WHERE id = $1', [req.params.id]);
-    if (old.rows.length === 0) return res.status(404).json({ error: 'Não encontrada' });
-    const o = old.rows[0];
-
-    await client.query('BEGIN');
-    if (o.type === 'purchase') {
-      await client.query('UPDATE materials SET stock_grams = stock_grams - $1, stock_carats = stock_carats - $2 WHERE id = $3', [parseFloat(o.weight_grams) || 0, parseFloat(o.weight_carats) || 0, o.material_id]);
-    } else {
-      await client.query('UPDATE materials SET stock_grams = stock_grams + $1, stock_carats = stock_carats + $2 WHERE id = $3', [parseFloat(o.weight_grams) || 0, parseFloat(o.weight_carats) || 0, o.material_id]);
-    }
-    await client.query('DELETE FROM treasury WHERE reference = $1', [o.code]);
-    await client.query('DELETE FROM transactions WHERE id = $1', [req.params.id]);
-    await client.query('COMMIT');
-    res.json({ message: 'OK' });
-  } catch (e) {
-    await client.query('ROLLBACK');
-    res.status(500).json({ error: 'Erro' });
-  } finally { client.release(); }
-});
+}
 
 // TESOURARIA
-app.get('/api/treasury', auth, async (req, res) => {
-  try {
-    const r = await pool.query('SELECT * FROM treasury ORDER BY date DESC, created_at DESC LIMIT 200');
-    const s = await pool.query('SELECT type, COALESCE(SUM(amount_eur),0) as t FROM treasury GROUP BY type');
-    const inc = parseFloat(s.rows.find(r => r.type === 'income')?.t || 0);
-    const exp = parseFloat(s.rows.find(r => r.type === 'expense')?.t || 0);
-    res.json({ transactions: r.rows, income: inc, expense: exp, balance: inc - exp });
-  } catch (e) { res.status(500).json({ error: 'Erro' }); }
-});
+async function loadTreasury(){
+    try {
+        const res=await fetch(API+'/api/treasury',{headers:{'Authorization':'Bearer '+token}});
+        const d=await res.json();
+        document.getElementById('treasuryStats').innerHTML=
+            '<div class="stat-card"><div class="stat-value text-green">€'+d.income.toFixed(2)+'</div><div class="stat-label">Entradas</div></div>'+
+            '<div class="stat-card"><div class="stat-value text-red">€'+d.expense.toFixed(2)+'</div><div class="stat-label">Saídas</div></div>'+
+            '<div class="stat-card"><div class="stat-value">€'+d.balance.toFixed(2)+'</div><div class="stat-label">Saldo</div></div>';
+        
+        const tbody=document.querySelector('#treasuryTable tbody');
+        tbody.innerHTML=(d.transactions||[]).map(t=>
+            '<tr><td>'+new Date(t.date).toLocaleDateString('pt-PT')+'</td><td>'+t.description+'</td>'+
+            '<td><span class="badge badge-'+(t.type==='income'?'purchase':'sale')+'">'+(t.type==='income'?'Entrada':'Saída')+'</span></td>'+
+            '<td>'+t.currency+' '+parseFloat(t.amount).toFixed(2)+'</td><td>'+t.currency+'</td><td>'+t.reference+'</td></tr>'
+        ).join('')||'<tr><td colspan="6">Sem movimentos</td></tr>';
+    } catch(e) { console.error(e); }
+}
 
 // CLIENTES
-app.get('/api/clients', auth, async (req, res) => {
-  try { const r = await pool.query('SELECT * FROM clients ORDER BY name'); res.json(r.rows); }
-  catch (e) { res.status(500).json({ error: 'Erro' }); }
+async function loadClients(){
+    try {
+        const res=await fetch(API+'/api/clients',{headers:{'Authorization':'Bearer '+token}});
+        const data=await res.json();
+        const tbody=document.querySelector('#clientsTable tbody');
+        tbody.innerHTML=data.map(c=>
+            '<tr><td>'+c.name+'</td><td>'+(c.email||'-')+'</td><td>'+(c.phone||'-')+'</td><td>€'+parseFloat(c.total_purchases||0).toFixed(2)+'</td></tr>'
+        ).join('')||'<tr><td colspan="4">Sem clientes</td></tr>';
+    } catch(e) { console.error(e); }
+}
+
+// AUXILIARES
+async function loadMaterialsForSelect(){
+    try {
+        const res=await fetch(API+'/api/materials',{headers:{'Authorization':'Bearer '+token}});
+        const data=await res.json();
+        const sel=document.getElementById('materialId');
+        const cv=sel.value;
+        sel.innerHTML='<option value="">Selecione...</option>'+data.map(m=>'<option value="'+m.id+'">'+m.name+' ('+m.code+')</option>').join('');
+        if(cv)sel.value=cv;
+    } catch(e) { console.error(e); }
+}
+
+function showModal(id){
+    document.getElementById(id).classList.add('active');
+    if(id==='transactionModal'&&!document.getElementById('editId').value){
+        document.getElementById('modalTitle').textContent='Nova Transação';
+        document.getElementById('submitBtn').textContent='Registar Transação';
+        document.getElementById('transactionForm').reset();
+        document.getElementById('currency').value='EUR';
+        document.querySelectorAll('.currency-btn').forEach(b=>b.classList.remove('active'));
+        const eurBtn=document.querySelector('[data-currency="EUR"]');
+        if(eurBtn)eurBtn.classList.add('active');
+        document.getElementById('transactionDate').value=new Date().toISOString().split('T')[0];
+    }
+    if(id==='transactionModal')loadMaterialsForSelect();
+}
+
+function closeModal(id){
+    document.getElementById(id).classList.remove('active');
+    document.getElementById('editId').value='';
+}
+
+// MOEDAS
+document.querySelectorAll('.currency-btn').forEach(b=>b.addEventListener('click',function(){
+    document.querySelectorAll('.currency-btn').forEach(x=>x.classList.remove('active'));
+    this.classList.add('active');
+    document.getElementById('currency').value=this.dataset.currency;
+    calcTotal();
+}));
+
+['weightGrams','weightCarats','pricePerUnit'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(el)el.addEventListener('input',calcTotal);
 });
 
-app.post('/api/clients', auth, async (req, res) => {
-  try {
-    const { name, email, phone, address, nif } = req.body;
-    const r = await pool.query('INSERT INTO clients (name, email, phone, address, nif) VALUES ($1,$2,$3,$4,$5) RETURNING *', [name, email || '', phone || '', address || '', nif || '']);
-    res.status(201).json(r.rows[0]);
-  } catch (e) { res.status(500).json({ error: 'Erro' }); }
+function calcTotal(){
+    const g=parseFloat(document.getElementById('weightGrams').value)||0;
+    const ct=parseFloat(document.getElementById('weightCarats').value)||0;
+    const pr=parseFloat(document.getElementById('pricePerUnit').value)||0;
+    document.getElementById('totalPrice').value=((g+ct*0.2)*pr).toFixed(2);
+}
+
+// SUBMETER TRANSAÇÃO
+document.getElementById('transactionForm').addEventListener('submit',async(e)=>{
+    e.preventDefault();
+    const editId=document.getElementById('editId').value;
+    
+    const body={
+        material_id:document.getElementById('materialId').value,
+        type:document.getElementById('type').value,
+        lot_number:document.getElementById('lotNumber').value,
+        weight_grams:parseFloat(document.getElementById('weightGrams').value)||0,
+        weight_carats:parseFloat(document.getElementById('weightCarats').value)||0,
+        price_per_unit:parseFloat(document.getElementById('pricePerUnit').value),
+        total_price:parseFloat(document.getElementById('totalPrice').value),
+        currency:document.getElementById('currency').value,
+        quality:document.getElementById('quality').value,
+        origin:document.getElementById('origin').value,
+        client_name:document.getElementById('clientName').value,
+        payment_method:document.getElementById('paymentMethod').value,
+        transaction_date:document.getElementById('transactionDate').value,
+        notes:document.getElementById('notes').value
+    };
+    
+    // Validar campos obrigatórios
+    if(!body.material_id){alert('Selecione um material');return;}
+    if(!body.price_per_unit||body.price_per_unit<=0){alert('Preço por unidade é obrigatório');return;}
+    if(!body.transaction_date){alert('Data é obrigatória');return;}
+    
+    try {
+        const url=editId?API+'/api/transactions/'+editId:API+'/api/transactions';
+        const method=editId?'PUT':'POST';
+        
+        const res=await fetch(url,{
+            method,
+            headers:{'Content-Type':'application/json','Authorization':'Bearer '+token},
+            body:JSON.stringify(body)
+        });
+        
+        if(res.ok){
+            const data=await res.json();
+            alert('✅ '+(editId?'Transação atualizada!':'Transação registada!\n\nCódigo: '+data.code+'\nLote: '+data.lot));
+            closeModal('transactionModal');
+            loadDashboard();
+            loadTransactions();
+        } else {
+            const err=await res.json();
+            alert('❌ Erro: '+(err.error||'Erro ao registar'));
+        }
+    } catch(err) {
+        alert('Erro de conexão. Verifique sua internet.');
+    }
 });
 
-app.get('/', (req, res) => res.sendFile(path.join(__dirname, 'public', 'index.html')));
+// SUBMETER CLIENTE
+document.getElementById('clientForm').addEventListener('submit',async(e)=>{
+    e.preventDefault();
+    try {
+        const res=await fetch(API+'/api/clients',{
+            method:'POST',
+            headers:{'Content-Type':'application/json','Authorization':'Bearer '+token},
+            body:JSON.stringify({
+                name:document.getElementById('newClientName').value,
+                email:document.getElementById('newClientEmail').value,
+                phone:document.getElementById('newClientPhone').value,
+                address:document.getElementById('newClientAddress').value,
+                nif:document.getElementById('newClientNif').value
+            })
+        });
+        if(res.ok){
+            alert('✅ Cliente guardado!');
+            closeModal('clientModal');
+            loadClients();
+        } else {
+            alert('Erro ao guardar cliente');
+        }
+    } catch(err) {
+        alert('Erro de conexão');
+    }
+});
 
-initDB().then(() => app.listen(PORT, () => console.log('Servidor na porta ' + PORT)));
+// INICIAR
+if(token){
+    document.getElementById('loginScreen').style.display='none';
+    document.getElementById('appScreen').style.display='block';
+    loadDashboard();
+}
+</script>
+</body>
+</html>
