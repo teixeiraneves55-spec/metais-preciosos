@@ -127,6 +127,14 @@ app.put('/api/materials/:id/price', auth, async (req, res) => {
     res.json({ message: 'OK' });
   } catch (e) { res.status(500).json({ error: 'Erro' }); }
 });
+// Atualizar preço por código
+app.put('/api/materials/update-by-code', auth, async (req, res) => {
+  try {
+    const { code, price } = req.body;
+    await pool.query('UPDATE materials SET market_price_eur = $1 WHERE code = $2', [parseFloat(price), code]);
+    res.json({ message: 'OK' });
+  } catch (e) { res.status(500).json({ error: 'Erro' }); }
+});
 
 // STOCK VALUE
 app.get('/api/stock-value', auth, async (req, res) => {
