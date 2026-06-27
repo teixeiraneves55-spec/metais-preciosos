@@ -6,548 +6,424 @@
     <title>Metais & Pedras Preciosas</title>
     <style>
         *{margin:0;padding:0;box-sizing:border-box}
-        body{font-family:Arial,sans-serif;background:#1a1a2e;color:#e0e0e0;min-height:100vh}
-        .login-container{display:flex;align-items:center;justify-content:center;min-height:100vh;padding:20px}
-        .login-card{background:#16213e;padding:40px;border-radius:15px;border:1px solid #c9a84c;width:100%;max-width:400px}
-        .login-card h1{color:#c9a84c;text-align:center;margin-bottom:5px}
-        .login-card p{text-align:center;color:#a0a0a0;margin-bottom:25px;font-size:14px}
-        .form-group{margin-bottom:15px}
-        .form-group label{display:block;margin-bottom:5px;color:#c9a84c;font-weight:bold}
-        input,select,textarea{width:100%;padding:12px;border:1px solid #c9a84c;border-radius:8px;background:#1a1a2e;color:#e0e0e0;font-size:14px}
-        button{width:100%;padding:14px;background:#c9a84c;color:#1a1a2e;border:none;border-radius:8px;font-size:16px;font-weight:bold;cursor:pointer}
-        button:hover{background:#b8960f}
-        .header{background:#16213e;padding:15px 20px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #c9a84c;flex-wrap:wrap;gap:10px}
-        .header h2{color:#c9a84c;font-size:18px}
-        .nav-bar{position:fixed;bottom:0;left:0;right:0;background:#16213e;display:flex;justify-content:space-around;padding:10px;border-top:1px solid #c9a84c;z-index:100}
-        .nav-item{color:#a0a0a0;cursor:pointer;padding:8px 12px;border-radius:8px;text-align:center;font-size:11px}
+        body{font-family:'Segoe UI',Arial,sans-serif;background:#0f1923;color:#e8e6e3;min-height:100vh}
+        .login-box{display:flex;align-items:center;justify-content:center;min-height:100vh;padding:20px}
+        .login-card{background:#1a2735;padding:40px;border-radius:16px;border:1px solid #c9a84c;width:100%;max-width:400px;box-shadow:0 10px 40px rgba(0,0,0,0.5)}
+        .login-card h1{color:#c9a84c;text-align:center;font-size:22px;margin-bottom:5px}
+        .login-card .sub{text-align:center;color:#8b8b8b;margin-bottom:30px;font-size:13px}
+        .fg{margin-bottom:16px}
+        .fg label{display:block;margin-bottom:6px;color:#c9a84c;font-weight:600;font-size:13px}
+        input,select,textarea{width:100%;padding:12px 14px;border:1px solid rgba(201,168,76,0.3);border-radius:10px;background:#0f1923;color:#e8e6e3;font-size:14px;outline:none}
+        input:focus,select:focus,textarea:focus{border-color:#c9a84c}
+        .btn{width:100%;padding:14px;background:#c9a84c;color:#0f1923;border:none;border-radius:10px;font-size:15px;font-weight:700;cursor:pointer;transition:all 0.2s}
+        .btn:hover{background:#b8960f;transform:translateY(-1px)}
+        .btn-sm{padding:6px 12px;font-size:11px;width:auto;border-radius:6px}
+        .btn-red{background:#e74c3c;color:#fff}
+        .btn-blue{background:#2980b9;color:#fff}
+        .btn-orange{background:#e67e22;color:#fff}
+        .header{background:#1a2735;padding:14px 20px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid rgba(201,168,76,0.3);flex-wrap:wrap;gap:8px;position:sticky;top:0;z-index:50}
+        .header h2{color:#c9a84c;font-size:17px}
+        .nav{position:fixed;bottom:0;left:0;right:0;background:#1a2735;display:flex;justify-content:space-around;padding:8px 5px;border-top:1px solid rgba(201,168,76,0.3);z-index:50}
+        .nav-item{color:#8b8b8b;cursor:pointer;padding:6px 10px;border-radius:8px;text-align:center;font-size:10px;transition:all 0.2s}
         .nav-item.active{color:#c9a84c;background:rgba(201,168,76,0.1)}
-        .main-content{padding:20px;padding-bottom:80px;max-width:1200px;margin:0 auto}
+        .nav-item span{display:block;font-size:18px;margin-bottom:2px}
+        .content{padding:16px;padding-bottom:75px;max-width:1100px;margin:0 auto}
         .page{display:none}
-        .page.active{display:block}
-        .stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:15px;margin-bottom:20px}
-        .stat-card{background:#16213e;padding:20px;border-radius:12px;border:1px solid rgba(201,168,76,0.3);text-align:center}
-        .stat-value{font-size:24px;font-weight:bold;color:#c9a84c}
-        .stat-label{font-size:11px;color:#a0a0a0;margin-top:5px}
-        .card{background:#16213e;border-radius:12px;padding:20px;margin-bottom:15px;border:1px solid rgba(201,168,76,0.2)}
-        .card h3{color:#c9a84c;margin-bottom:15px}
-        table{width:100%;border-collapse:collapse;font-size:13px}
-        th,td{padding:10px;text-align:left;border-bottom:1px solid rgba(255,255,255,0.1)}
-        th{color:#c9a84c;font-size:12px}
-        .badge{padding:4px 10px;border-radius:15px;font-size:11px}
-        .badge-purchase{background:rgba(76,175,80,0.2);color:#4caf50}
-        .badge-sale{background:rgba(244,67,54,0.2);color:#f44336}
-        .btn{padding:8px 14px;border-radius:6px;border:none;cursor:pointer;font-size:12px;margin:2px;width:auto}
-        .btn-primary{background:#c9a84c;color:#1a1a2e}
-        .btn-danger{background:#f44336;color:white}
-        .btn-info{background:#2196f3;color:white}
-        .btn-warning{background:#ff9800;color:white}
-        .btn-sm{padding:5px 10px;font-size:11px}
-        .modal{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.8);z-index:1000;align-items:center;justify-content:center}
-        .modal.active{display:flex}
-        .modal-content{background:#16213e;border-radius:15px;padding:25px;max-width:550px;width:90%;max-height:90vh;overflow-y:auto}
-        .modal-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px}
-        .close-btn{background:none;border:none;color:#e0e0e0;font-size:24px;cursor:pointer}
-        .table-container{overflow-x:auto}
-        .currency-selector{display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap}
-        .currency-btn{padding:6px 12px;border:1px solid #c9a84c;background:transparent;color:#c9a84c;border-radius:15px;cursor:pointer;font-size:12px}
-        .currency-btn.active{background:#c9a84c;color:#1a1a2e}
-        .text-green{color:#4caf50}
-        .text-red{color:#f44336}
+        .page.active{display:block;animation:fadeIn 0.3s}
+        @keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+        .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:12px;margin-bottom:20px}
+        .stat-card{background:#1a2735;padding:18px;border-radius:12px;border:1px solid rgba(201,168,76,0.2);text-align:center}
+        .stat-card .val{font-size:22px;font-weight:700;color:#c9a84c}
+        .stat-card .lbl{font-size:10px;color:#8b8b8b;margin-top:4px}
+        .card{background:#1a2735;border-radius:12px;padding:18px;margin-bottom:14px;border:1px solid rgba(201,168,76,0.15)}
+        .card h3{color:#c9a84c;font-size:15px;margin-bottom:12px}
+        table{width:100%;border-collapse:collapse;font-size:12px}
+        th,td{padding:8px 6px;text-align:left;border-bottom:1px solid rgba(255,255,255,0.05)}
+        th{color:#c9a84c;font-size:11px;font-weight:600}
+        .badge{padding:3px 8px;border-radius:12px;font-size:10px;font-weight:600}
+        .badge-green{background:rgba(46,204,113,0.2);color:#2ecc71}
+        .badge-red{background:rgba(231,76,60,0.2);color:#e74c3c}
+        .green{color:#2ecc71}
+        .red{color:#e74c3c}
+        .modal{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.85);z-index:1000;align-items:center;justify-content:center}
+        .modal.on{display:flex}
+        .modal-box{background:#1a2735;border-radius:14px;padding:22px;max-width:520px;width:92%;max-height:85vh;overflow-y:auto;border:1px solid rgba(201,168,76,0.3)}
+        .modal-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px}
+        .modal-head h3{color:#c9a84c}
+        .close{background:none;border:none;color:#e8e6e3;font-size:22px;cursor:pointer;padding:0;width:auto}
+        .cur-row{display:flex;gap:6px;margin-bottom:10px;flex-wrap:wrap}
+        .cur-btn{padding:6px 14px;border:1px solid rgba(201,168,76,0.4);background:transparent;color:#c9a84c;border-radius:16px;cursor:pointer;font-size:11px;transition:all 0.2s}
+        .cur-btn.sel{background:#c9a84c;color:#0f1923}
+        .tb{overflow-x:auto}
     </style>
 </head>
 <body>
-<div id="loginScreen" class="login-container">
+
+<!-- LOGIN -->
+<div id="loginScreen" class="login-box">
     <div class="login-card">
         <h1>💎 Metais & Pedras</h1>
-        <p>Sistema Profissional de Gestão</p>
+        <p class="sub">Sistema Profissional de Gestão</p>
         <form id="loginForm">
-            <div class="form-group"><label>Email</label><input type="email" id="loginEmail" value="admin@metaispreciosos.pt" required></div>
-            <div class="form-group"><label>Senha</label><input type="password" id="loginPassword" value="Admin123!" required></div>
-            <button type="submit">Entrar</button>
+            <div class="fg"><label>Email</label><input type="email" id="lemail" value="admin@metaispreciosos.pt" required></div>
+            <div class="fg"><label>Senha</label><input type="password" id="lpass" value="Admin123!" required></div>
+            <button type="submit" class="btn">Entrar</button>
         </form>
     </div>
 </div>
 
+<!-- APP -->
 <div id="appScreen" style="display:none">
     <div class="header">
         <h2>💎 Metais & Pedras</h2>
-        <div style="display:flex;gap:8px;flex-wrap:wrap">
-            <button class="btn btn-primary btn-sm" onclick="showModal('transactionModal')">+ Transação</button>
-            <button class="btn btn-warning btn-sm" onclick="showPriceModal()">💲 Preços</button>
-            <button class="btn btn-info btn-sm" onclick="showPage('treasury')">🏦 Tesouraria</button>
-            <button class="btn btn-danger btn-sm" onclick="logout()">Sair</button>
+        <div style="display:flex;gap:6px;flex-wrap:wrap">
+            <button class="btn btn-sm" onclick="openModal('txModal')">+ Transação</button>
+            <button class="btn btn-sm btn-orange" onclick="priceModal()">💲 Preços</button>
+            <button class="btn btn-sm btn-blue" onclick="showPage('treasury')">🏦 Tesouraria</button>
+            <button class="btn btn-sm btn-red" onclick="logout()">Sair</button>
         </div>
     </div>
-    <div class="main-content">
+
+    <div class="content">
+        <!-- DASHBOARD -->
         <div id="dashboardPage" class="page active">
-            <div class="stats-grid" id="dashboardStats"></div>
-            <div class="card"><h3>🕐 Últimas Transações</h3><div class="table-container"><table id="recentTable"><thead><tr><th>Código</th><th>Lote</th><th>Material</th><th>Tipo</th><th>Valor</th><th>Data</th></tr></thead><tbody></tbody></table></div></div>
+            <div class="stats" id="dashStats"></div>
+            <div class="card"><h3>🕐 Últimas Transações</h3><div class="tb"><table id="recentTbl"><thead><tr><th>Código</th><th>Lote</th><th>Material</th><th>Tipo</th><th>Valor</th><th>Data</th></tr></thead><tbody></tbody></table></div></div>
         </div>
+
+        <!-- TRANSAÇÕES -->
         <div id="transactionsPage" class="page">
-            <div class="card"><h3>📋 Histórico</h3><div class="table-container"><table id="transactionsTable"><thead><tr><th>Código</th><th>Lote</th><th>Material</th><th>Tipo</th><th>Peso</th><th>Preço/u</th><th>Total</th><th>Moeda</th><th>Cliente</th><th>Data</th><th>Ações</th></tr></thead><tbody></tbody></table></div></div>
+            <div class="card"><h3>📋 Histórico</h3><div class="tb"><table id="txTbl"><thead><tr><th>Código</th><th>Lote</th><th>Material</th><th>Tipo</th><th>Peso</th><th>Preço/u</th><th>Total</th><th>Moeda</th><th>Cliente</th><th>Data</th><th>Ações</th></tr></thead><tbody></tbody></table></div></div>
         </div>
+
+        <!-- STOCK -->
         <div id="stockPage" class="page">
             <div class="card"><h3>💎 Stock</h3>
-                <div style="margin-bottom:15px;display:flex;gap:8px;flex-wrap:wrap">
-                    <button class="btn btn-info btn-sm" onclick="showAddMaterial()">+ Material</button>
-                </div>
-                <div class="table-container"><table id="stockTable"><thead><tr><th>Código</th><th>Nome</th><th>Tipo</th><th>Gramas</th><th>Quilates</th><th>Preço Mercado</th><th>Valor (80%)</th><th>Ações</th></tr></thead><tbody></tbody></table></div>
+                <div style="margin-bottom:12px"><button class="btn btn-sm btn-blue" onclick="addProduct()">+ Material</button></div>
+                <div class="tb"><table id="stockTbl"><thead><tr><th>Código</th><th>Nome</th><th>Tipo</th><th>Gramas</th><th>Quilates</th><th>Preço Mercado</th><th>Valor (80%)</th><th>Ações</th></tr></thead><tbody></tbody></table></div>
             </div>
         </div>
+
+        <!-- CLIENTES -->
         <div id="clientsPage" class="page">
             <div class="card"><h3>👥 Clientes</h3>
-                <button class="btn btn-primary btn-sm" onclick="showModal('clientModal')" style="margin-bottom:15px">+ Novo Cliente</button>
-                <div class="table-container"><table id="clientsTable"><thead><tr><th>Nome</th><th>Email</th><th>Telefone</th><th>Total Compras</th></tr></thead><tbody></tbody></table></div>
+                <button class="btn btn-sm" onclick="openModal('clientModal')" style="margin-bottom:12px">+ Novo Cliente</button>
+                <div class="tb"><table id="clientTbl"><thead><tr><th>Nome</th><th>Email</th><th>Telefone</th><th>Total Compras</th></tr></thead><tbody></tbody></table></div>
             </div>
         </div>
+
+        <!-- TESOURARIA -->
         <div id="treasuryPage" class="page">
-            <div class="stats-grid" id="treasuryStats"></div>
-            <div class="card"><h3>🏦 Tesouraria</h3><div class="table-container"><table id="treasuryTable"><thead><tr><th>Data</th><th>Descrição</th><th>Tipo</th><th>Valor</th><th>Moeda</th><th>Ref</th></tr></thead><tbody></tbody></table></div></div>
+            <div class="stats" id="treasuryStats"></div>
+            <div class="card"><h3>🏦 Movimentos</h3><div class="tb"><table id="treasuryTbl"><thead><tr><th>Data</th><th>Descrição</th><th>Tipo</th><th>Valor</th><th>Moeda</th><th>Ref</th></tr></thead><tbody></tbody></table></div></div>
         </div>
     </div>
-    <div class="nav-bar">
-        <div class="nav-item active" onclick="showPage('dashboard')">📊 Dashboard</div>
-        <div class="nav-item" onclick="showPage('transactions')">📋 Transações</div>
-        <div class="nav-item" onclick="showPage('stock')">💎 Stock</div>
-        <div class="nav-item" onclick="showPage('clients')">👥 Clientes</div>
-        <div class="nav-item" onclick="showPage('treasury')">🏦 Tesouraria</div>
+
+    <!-- NAV -->
+    <div class="nav">
+        <div class="nav-item active" onclick="showPage('dashboard')"><span>📊</span>Dashboard</div>
+        <div class="nav-item" onclick="showPage('transactions')"><span>📋</span>Transações</div>
+        <div class="nav-item" onclick="showPage('stock')"><span>💎</span>Stock</div>
+        <div class="nav-item" onclick="showPage('clients')"><span>👥</span>Clientes</div>
+        <div class="nav-item" onclick="showPage('treasury')"><span>🏦</span>Tesouraria</div>
     </div>
 </div>
 
-<div id="transactionModal" class="modal">
-    <div class="modal-content">
-        <div class="modal-header"><h3 id="modalTitle">Nova Transação</h3><button class="close-btn" onclick="closeModal('transactionModal')">✕</button></div>
-        <form id="transactionForm">
+<!-- MODAL TRANSAÇÃO -->
+<div id="txModal" class="modal">
+    <div class="modal-box">
+        <div class="modal-head"><h3 id="txTitle">Nova Transação</h3><button class="close" onclick="closeModal('txModal')">✕</button></div>
+        <form id="txForm">
             <input type="hidden" id="editId">
-            <div class="form-group"><label>Material *</label><select id="materialId" required></select></div>
-            <div class="form-group"><label>Tipo *</label><select id="type" required><option value="purchase">Compra</option><option value="sale">Venda</option></select></div>
-            <div class="form-group"><label>Nº Lote</label><input type="text" id="lotNumber" placeholder="Ex: LOTE-2026-001"></div>
-            <div class="form-group"><label>Peso (gramas)</label><input type="number" id="weightGrams" step="0.001" placeholder="0.000"></div>
-            <div class="form-group"><label>Peso (quilates)</label><input type="number" id="weightCarats" step="0.001" placeholder="0.000"></div>
-            <div class="form-group"><label>Preço por Unidade *</label><input type="number" id="pricePerUnit" step="0.01" required></div>
-            <div class="form-group"><label>Preço Total</label><input type="number" id="totalPrice" step="0.01" readonly></div>
-            <div class="form-group"><label>Moeda</label>
-                <div class="currency-selector">
-                    <span class="currency-btn active" data-currency="EUR">€ EUR</span>
-                    <span class="currency-btn" data-currency="USD">$ USD</span>
-                    <span class="currency-btn" data-currency="FCFA">FCFA</span>
+            <div class="fg"><label>Material *</label><select id="txProduct" required></select></div>
+            <div class="fg"><label>Tipo *</label><select id="txType" required><option value="purchase">Compra</option><option value="sale">Venda</option></select></div>
+            <div class="fg"><label>Nº Lote</label><input type="text" id="txLot" placeholder="Ex: LOTE-001"></div>
+            <div class="fg"><label>Peso (gramas)</label><input type="number" id="txWg" step="0.001" placeholder="0.000"></div>
+            <div class="fg"><label>Peso (quilates)</label><input type="number" id="txWct" step="0.001" placeholder="0.000"></div>
+            <div class="fg"><label>Preço por Unidade *</label><input type="number" id="txPrice" step="0.01" required></div>
+            <div class="fg"><label>Preço Total</label><input type="number" id="txTotal" step="0.01" readonly></div>
+            <div class="fg"><label>Moeda</label>
+                <div class="cur-row" id="curRow">
+                    <span class="cur-btn sel" data-c="EUR">€ EUR</span>
+                    <span class="cur-btn" data-c="USD">$ USD</span>
+                    <span class="cur-btn" data-c="FCFA">FCFA</span>
                 </div>
-                <input type="hidden" id="currency" value="EUR">
+                <input type="hidden" id="txCur" value="EUR">
             </div>
-            <div class="form-group"><label>Qualidade</label><select id="quality"><option value="">Selecione</option><option value="24K">24K</option><option value="22K">22K</option><option value="20K">20K</option><option value="18K">18K</option><option value="AAA">AAA</option><option value="AA">AA</option></select></div>
-            <div class="form-group"><label>Origem</label><input type="text" id="origin" placeholder="Ex: Camarões, Brasil, África do Sul"></div>
-            <div class="form-group"><label>Cliente</label><input type="text" id="clientName" placeholder="Nome do cliente"></div>
-            <div class="form-group"><label>Pagamento</label><select id="paymentMethod"><option value="cash">Dinheiro</option><option value="card">Cartão</option><option value="transfer">Transferência</option><option value="mbway">MB WAY</option></select></div>
-            <div class="form-group"><label>Data *</label><input type="date" id="transactionDate" required></div>
-            <div class="form-group"><label>Observações</label><textarea id="notes" rows="2"></textarea></div>
-            <button type="submit" id="submitBtn">Registar Transação</button>
+            <div class="fg"><label>Qualidade</label><select id="txQuality"><option value="">Selecione</option><option value="24K">24K</option><option value="22K">22K</option><option value="20K">20K</option><option value="18K">18K</option><option value="AAA">AAA</option><option value="AA">AA</option></select></div>
+            <div class="fg"><label>Origem</label><input type="text" id="txOrigin" placeholder="Ex: Camarões, Brasil"></div>
+            <div class="fg"><label>Cliente</label><input type="text" id="txClient" placeholder="Nome"></div>
+            <div class="fg"><label>Pagamento</label><select id="txPay"><option value="cash">Dinheiro</option><option value="card">Cartão</option><option value="transfer">Transferência</option><option value="mbway">MB WAY</option></select></div>
+            <div class="fg"><label>Data *</label><input type="date" id="txDate" required></div>
+            <div class="fg"><label>Observações</label><textarea id="txNotes" rows="2"></textarea></div>
+            <button type="submit" class="btn" id="txSubmit">Registar Transação</button>
         </form>
     </div>
 </div>
 
+<!-- MODAL CLIENTE -->
 <div id="clientModal" class="modal">
-    <div class="modal-content">
-        <div class="modal-header"><h3>Novo Cliente</h3><button class="close-btn" onclick="closeModal('clientModal')">✕</button></div>
+    <div class="modal-box">
+        <div class="modal-head"><h3>Novo Cliente</h3><button class="close" onclick="closeModal('clientModal')">✕</button></div>
         <form id="clientForm">
-            <div class="form-group"><label>Nome *</label><input type="text" id="newClientName" required></div>
-            <div class="form-group"><label>Email</label><input type="email" id="newClientEmail"></div>
-            <div class="form-group"><label>Telefone</label><input type="text" id="newClientPhone"></div>
-            <div class="form-group"><label>Morada</label><input type="text" id="newClientAddress"></div>
-            <div class="form-group"><label>NIF</label><input type="text" id="newClientNif"></div>
-            <button type="submit">Guardar Cliente</button>
+            <div class="fg"><label>Nome *</label><input type="text" id="cName" required></div>
+            <div class="fg"><label>Email</label><input type="email" id="cEmail"></div>
+            <div class="fg"><label>Telefone</label><input type="text" id="cPhone"></div>
+            <div class="fg"><label>Morada</label><input type="text" id="cAddr"></div>
+            <div class="fg"><label>NIF</label><input type="text" id="cNif"></div>
+            <button type="submit" class="btn">Guardar Cliente</button>
         </form>
     </div>
 </div>
-
 <script>
-const API='';
-let token=localStorage.getItem('token');
+const A='';
+let T=localStorage.getItem('t');
+const R={EUR:1,USD:1.08,FCFA:655.96};
 
 // LOGIN
 document.getElementById('loginForm').addEventListener('submit',async(e)=>{
     e.preventDefault();
-    try {
-        const res=await fetch(API+'/api/auth/login',{
-            method:'POST',
-            headers:{'Content-Type':'application/json'},
-            body:JSON.stringify({
-                email:document.getElementById('loginEmail').value,
-                password:document.getElementById('loginPassword').value
-            })
-        });
-        const data=await res.json();
-        if(res.ok){
-            token=data.token;
-            localStorage.setItem('token',token);
-            document.getElementById('loginScreen').style.display='none';
-            document.getElementById('appScreen').style.display='block';
-            loadDashboard();
-        } else {
-            alert('❌ '+ (data.error || 'Erro no login'));
-        }
-    } catch(err) {
-        alert('Erro de conexão. Verifique sua internet.');
-    }
+    try{
+        const r=await fetch(A+'/api/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:document.getElementById('lemail').value,password:document.getElementById('lpass').value})});
+        const d=await r.json();
+        if(r.ok){T=d.token;localStorage.setItem('t',T);document.getElementById('loginScreen').style.display='none';document.getElementById('appScreen').style.display='block';dash();}
+        else alert('❌ '+(d.error||'Erro'));
+    }catch(e){alert('Erro de conexão');}
 });
 
-function logout(){
-    localStorage.removeItem('token');
-    token=null;
-    document.getElementById('appScreen').style.display='none';
-    document.getElementById('loginScreen').style.display='flex';
-}
+function logout(){localStorage.removeItem('t');T=null;document.getElementById('appScreen').style.display='none';document.getElementById('loginScreen').style.display='flex';}
 
 function showPage(p){
     document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));
     document.getElementById(p+'Page').classList.add('active');
     document.querySelectorAll('.nav-item').forEach(x=>x.classList.remove('active'));
     event.target.classList.add('active');
-    if(p==='dashboard')loadDashboard();
-    if(p==='transactions')loadTransactions();
-    if(p==='stock')loadStock();
-    if(p==='clients')loadClients();
-    if(p==='treasury')loadTreasury();
+    if(p==='dashboard')dash();
+    if(p==='transactions')txList();
+    if(p==='stock')stockList();
+    if(p==='clients')clientList();
+    if(p==='treasury')treasuryList();
 }
 
 // DASHBOARD
-async function loadDashboard(){
-    try {
-        const res=await fetch(API+'/api/dashboard',{headers:{'Authorization':'Bearer '+token}});
-        const d=await res.json();
-        document.getElementById('dashboardStats').innerHTML=
-            '<div class="stat-card"><div class="stat-value">'+(d.totalItems||0)+'</div><div class="stat-label">Itens Stock</div></div>'+
-            '<div class="stat-card"><div class="stat-value text-red">€'+(d.monthPurchases||0).toFixed(2)+'</div><div class="stat-label">Compras Mês</div></div>'+
-            '<div class="stat-card"><div class="stat-value text-green">€'+(d.monthSales||0).toFixed(2)+'</div><div class="stat-label">Vendas Mês</div></div>'+
-            '<div class="stat-card"><div class="stat-value">€'+(d.treasuryBalance||0).toFixed(2)+'</div><div class="stat-label">Saldo Tesouraria</div></div>';
-        
-        const tbody=document.querySelector('#recentTable tbody');
-        tbody.innerHTML=(d.recentTransactions||[]).map(t=>
-            '<tr><td>'+t.code+'</td><td>'+(t.lot_number||'-')+'</td><td>'+t.mn+'</td>'+
-            '<td><span class="badge badge-'+(t.type==='purchase'?'purchase':'sale')+'">'+(t.type==='purchase'?'Compra':'Venda')+'</span></td>'+
-            '<td>'+t.currency+' '+parseFloat(t.total_price).toFixed(2)+'</td>'+
-            '<td>'+new Date(t.transaction_date).toLocaleDateString('pt-PT')+'</td></tr>'
+async function dash(){
+    try{
+        const r=await fetch(A+'/api/dashboard',{headers:{'Authorization':'Bearer '+T}});
+        const d=await r.json();
+        document.getElementById('dashStats').innerHTML=
+            '<div class="stat-card"><div class="val">'+(d.items||0)+'</div><div class="lbl">Itens Stock</div></div>'+
+            '<div class="stat-card"><div class="val red">€'+(d.purchases||0).toFixed(2)+'</div><div class="lbl">Compras Mês</div></div>'+
+            '<div class="stat-card"><div class="val green">€'+(d.sales||0).toFixed(2)+'</div><div class="lbl">Vendas Mês</div></div>'+
+            '<div class="stat-card"><div class="val">€'+(d.balance||0).toFixed(2)+'</div><div class="lbl">Saldo</div></div>';
+        document.querySelector('#recentTbl tbody').innerHTML=(d.recent||[]).map(t=>
+            '<tr><td>'+t.code+'</td><td>'+(t.lot||'-')+'</td><td>'+t.pname+'</td>'+
+            '<td><span class="badge '+(t.type==='purchase'?'badge-green':'badge-red')+'">'+(t.type==='purchase'?'Compra':'Venda')+'</span></td>'+
+            '<td>'+t.currency+' '+parseFloat(t.total).toFixed(2)+'</td><td>'+new Date(t.tdate).toLocaleDateString('pt-PT')+'</td></tr>'
         ).join('')||'<tr><td colspan="6">Sem transações</td></tr>';
-    } catch(e) { console.error(e); }
+    }catch(e){console.error(e);}
 }
 
 // TRANSAÇÕES
-async function loadTransactions(){
-    try {
-        const res=await fetch(API+'/api/transactions',{headers:{'Authorization':'Bearer '+token}});
-        const data=await res.json();
-        const tbody=document.querySelector('#transactionsTable tbody');
-        tbody.innerHTML=data.map(t=>
-            '<tr><td>'+t.code+'</td><td>'+(t.lot_number||'-')+'</td><td>'+t.mn+'</td>'+
-            '<td><span class="badge badge-'+(t.type==='purchase'?'purchase':'sale')+'">'+(t.type==='purchase'?'Compra':'Venda')+'</span></td>'+
-            '<td>'+(t.weight_grams||t.weight_carats||'0')+'</td>'+
-            '<td>'+t.currency+' '+parseFloat(t.price_per_unit||0).toFixed(2)+'</td>'+
-            '<td>'+t.currency+' '+parseFloat(t.total_price).toFixed(2)+'</td>'+
-            '<td>'+t.currency+'</td><td>'+(t.client_name||'-')+'</td>'+
-            '<td>'+new Date(t.transaction_date).toLocaleDateString('pt-PT')+'</td>'+
-            '<td><button class="btn btn-info btn-sm" onclick="editTransaction('+t.id+')">✏️</button> '+
-            '<button class="btn btn-danger btn-sm" onclick="deleteTransaction('+t.id+')">🗑️</button></td></tr>'
+async function txList(){
+    try{
+        const r=await fetch(A+'/api/transactions',{headers:{'Authorization':'Bearer '+T}});
+        const d=await r.json();
+        document.querySelector('#txTbl tbody').innerHTML=d.map(t=>
+            '<tr><td>'+t.code+'</td><td>'+(t.lot||'-')+'</td><td>'+t.pname+'</td>'+
+            '<td><span class="badge '+(t.type==='purchase'?'badge-green':'badge-red')+'">'+(t.type==='purchase'?'Compra':'Venda')+'</span></td>'+
+            '<td>'+(t.wg||t.wct||'0')+'</td><td>'+t.currency+' '+parseFloat(t.price_unit||0).toFixed(2)+'</td>'+
+            '<td>'+t.currency+' '+parseFloat(t.total).toFixed(2)+'</td><td>'+t.currency+'</td>'+
+            '<td>'+(t.client||'-')+'</td><td>'+new Date(t.tdate).toLocaleDateString('pt-PT')+'</td>'+
+            '<td><button class="btn btn-sm btn-blue" onclick="editTx('+t.id+')">✏️</button> <button class="btn btn-sm btn-red" onclick="delTx('+t.id+')">🗑️</button></td></tr>'
         ).join('')||'<tr><td colspan="11">Sem transações</td></tr>';
-    } catch(e) { console.error(e); }
+    }catch(e){console.error(e);}
 }
 
-async function editTransaction(id){
-    try {
-        const res=await fetch(API+'/api/transactions/'+id,{headers:{'Authorization':'Bearer '+token}});
-        const t=await res.json();
-        document.getElementById('modalTitle').textContent='Editar Transação';
+async function editTx(id){
+    try{
+        const r=await fetch(A+'/api/transactions/'+id,{headers:{'Authorization':'Bearer '+T}});
+        const t=await r.json();
+        document.getElementById('txTitle').textContent='Editar Transação';
         document.getElementById('editId').value=t.id;
-        document.getElementById('materialId').value=t.material_id;
-        document.getElementById('type').value=t.type;
-        document.getElementById('lotNumber').value=t.lot_number||'';
-        document.getElementById('weightGrams').value=t.weight_grams||'';
-        document.getElementById('weightCarats').value=t.weight_carats||'';
-        document.getElementById('pricePerUnit').value=t.price_per_unit;
-        document.getElementById('totalPrice').value=t.total_price;
-        document.getElementById('currency').value=t.currency;
-        document.getElementById('quality').value=t.quality||'';
-        document.getElementById('origin').value=t.origin||'';
-        document.getElementById('clientName').value=t.client_name||'';
-        document.getElementById('paymentMethod').value=t.payment_method||'cash';
-        document.getElementById('transactionDate').value=t.transaction_date;
-        document.getElementById('notes').value=t.notes||'';
-        document.getElementById('submitBtn').textContent='Atualizar Transação';
-        document.querySelectorAll('.currency-btn').forEach(b=>b.classList.remove('active'));
-        const ab=document.querySelector('[data-currency="'+t.currency+'"]');
-        if(ab)ab.classList.add('active');
-        loadMaterialsForSelect();
-        showModal('transactionModal');
-    } catch(e) { console.error(e); }
+        document.getElementById('txType').value=t.type;
+        document.getElementById('txLot').value=t.lot||'';
+        document.getElementById('txWg').value=t.wg||'';
+        document.getElementById('txWct').value=t.wct||'';
+        document.getElementById('txPrice').value=t.price_unit;
+        document.getElementById('txTotal').value=t.total;
+        document.getElementById('txCur').value=t.currency;
+        document.getElementById('txQuality').value=t.quality||'';
+        document.getElementById('txOrigin').value=t.origin||'';
+        document.getElementById('txClient').value=t.client||'';
+        document.getElementById('txPay').value=t.payment||'cash';
+        document.getElementById('txDate').value=t.tdate;
+        document.getElementById('txNotes').value=t.notes||'';
+        document.getElementById('txSubmit').textContent='Atualizar Transação';
+        document.querySelectorAll('.cur-btn').forEach(b=>b.classList.remove('sel'));
+        const ab=document.querySelector('[data-c="'+t.currency+'"]');
+        if(ab)ab.classList.add('sel');
+        loadProducts();openModal('txModal');
+    }catch(e){console.error(e);}
 }
 
-async function deleteTransaction(id){
-    if(!confirm('Eliminar esta transação?'))return;
-    try {
-        const res=await fetch(API+'/api/transactions/'+id,{method:'DELETE',headers:{'Authorization':'Bearer '+token}});
-        if(res.ok){alert('✅ Eliminada!');loadTransactions();loadDashboard();}
-        else alert('Erro ao eliminar');
-    } catch(e) { alert('Erro de conexão'); }
+async function delTx(id){
+    if(!confirm('Eliminar?'))return;
+    await fetch(A+'/api/transactions/'+id,{method:'DELETE',headers:{'Authorization':'Bearer '+T}});
+    alert('✅ Eliminada!');txList();dash();
 }
 
 // STOCK
-async function loadStock(){
-    try {
-        const res=await fetch(API+'/api/stock-value',{headers:{'Authorization':'Bearer '+token}});
-        const data=await res.json();
-        const tbody=document.querySelector('#stockTable tbody');
-        tbody.innerHTML=data.map(m=>
-            '<tr><td>'+(m.code||'-')+'</td><td>'+m.name+'</td><td>'+m.type+'</td>'+
-            '<td>'+(m.stock_grams||0)+'g</td><td>'+(m.stock_carats||0)+'ct</td>'+
-            '<td>€'+parseFloat(m.marketPrice||0).toFixed(2)+'</td>'+
-            '<td><strong>€'+m.estimatedValue+'</strong></td>'+
-            '<td><button class="btn btn-info btn-sm" onclick="updatePrice('+m.id+','+parseFloat(m.market_price_eur||0).toFixed(2)+')">💲</button></td></tr>'
-        ).join('')||'<tr><td colspan="8">Sem materiais. Os materiais são criados automaticamente.</td></tr>';
-    } catch(e) { console.error(e); }
+async function stockList(){
+    try{
+        const r=await fetch(A+'/api/stock',{headers:{'Authorization':'Bearer '+T}});
+        const d=await r.json();
+        document.querySelector('#stockTbl tbody').innerHTML=d.map(p=>
+            '<tr><td>'+p.code+'</td><td>'+p.name+'</td><td>'+p.type+'</td>'+
+            '<td>'+(p.stock_g||0)+'g</td><td>'+(p.stock_ct||0)+'ct</td>'+
+            '<td>€'+p.marketPrice+'</td><td><strong>€'+p.stockValue+'</strong></td>'+
+            '<td><button class="btn btn-sm btn-orange" onclick="updPrice(\''+p.code+'\','+p.marketPrice+')">💲</button></td></tr>'
+        ).join('')||'<tr><td colspan="8">Carregando...</td></tr>';
+    }catch(e){console.error(e);}
 }
 
-function updatePrice(id,cp){
-    const p=prompt('Novo preço de mercado por unidade (€):',cp);
-    if(p && !isNaN(p)){
-        fetch(API+'/api/materials/'+id+'/price',{
-            method:'PUT',
-            headers:{'Content-Type':'application/json','Authorization':'Bearer '+token},
-            body:JSON.stringify({market_price_eur:parseFloat(p)})
-        }).then(()=>loadStock());
+function updPrice(code,cp){
+    const np=prompt('Preço mercado por unidade (€):',cp);
+    if(np&&!isNaN(np)){
+        fetch(A+'/api/products/price',{method:'PUT',headers:{'Content-Type':'application/json','Authorization':'Bearer '+T},body:JSON.stringify({code:code,price:parseFloat(np)})}).then(()=>stockList());
     }
 }
 
-function showAddMaterial(){
-    const n=prompt('Nome do material:');
-    if(!n)return;
-    const c=prompt('Código (ex: AU24K):');
-    if(!c)return;
-    const t=prompt('Tipo (metal ou gem):');
-    const s=prompt('Subtipo (ex: Ouro, Diamante):');
-    const u=prompt('Unidade (g ou ct):');
-    const p=prompt('Preço mercado por unidade (€):','0');
-    fetch(API+'/api/materials',{
-        method:'POST',
-        headers:{'Content-Type':'application/json','Authorization':'Bearer '+token},
-        body:JSON.stringify({code:c,name:n,type:t,subtype:s,unit:u,market_price_eur:parseFloat(p)||0})
-    }).then(()=>loadStock());
+function addProduct(){
+    const n=prompt('Nome:'),c=prompt('Código:'),t=prompt('Tipo (metal/gem):'),s=prompt('Subtipo:'),u=prompt('Unidade (g/ct):'),p=prompt('Preço (€):','0');
+    if(n&&c)fetch(A+'/api/products',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+T},body:JSON.stringify({code:c,name:n,type:t,subtype:s,unit:u,price_eur:parseFloat(p)||0})}).then(()=>stockList());
 }
 
-// PREÇOS
-function showPriceModal(){
-    const modal=document.createElement('div');
-    modal.style.cssText='position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.8);z-index:2000;display:flex;align-items:center;justify-content:center';
-    modal.innerHTML=
-        '<div style="background:#16213e;border-radius:15px;padding:25px;max-width:400px;width:90%;border:1px solid #c9a84c">'+
-        '<h3 style="color:#c9a84c;margin-bottom:20px">💲 Atualizar Preços de Mercado</h3>'+
-        '<div class="form-group"><label>Ouro 24K (€/grama)</label><input type="number" id="newGold" step="0.01" value="72"></div>'+
-        '<div class="form-group"><label>Prata (€/grama)</label><input type="number" id="newSilver" step="0.01" value="0.85"></div>'+
-        '<div class="form-group"><label>Platina (€/grama)</label><input type="number" id="newPlatinum" step="0.01" value="31"></div>'+
-        '<button onclick="savePrices()" style="background:#c9a84c;color:#1a1a2e;width:100%;padding:12px;border:none;border-radius:8px;font-weight:bold;cursor:pointer;margin-bottom:8px">Guardar Preços</button>'+
-        '<button onclick="this.closest(\'div\').parentElement.remove()" style="background:transparent;border:1px solid #f44336;color:#f44336;width:100%;padding:10px;border-radius:8px;cursor:pointer">Cancelar</button>'+
-        '</div>';
-    document.body.appendChild(modal);
-    modal.addEventListener('click',function(e){if(e.target===modal)modal.remove()});
+function priceModal(){
+    const m=document.createElement('div');
+    m.style.cssText='position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.85);z-index:2000;display:flex;align-items:center;justify-content:center';
+    m.innerHTML='<div style="background:#1a2735;border-radius:14px;padding:22px;max-width:400px;width:92%;border:1px solid #c9a84c"><h3 style="color:#c9a84c;margin-bottom:16px">💲 Atualizar Preços</h3><div class="fg"><label>Ouro 24K (€/g)</label><input type="number" id="pg" step="0.01" value="72"></div><div class="fg"><label>Prata (€/g)</label><input type="number" id="ps" step="0.01" value="0.85"></div><div class="fg"><label>Platina (€/g)</label><input type="number" id="pp" step="0.01" value="31"></div><button onclick="savePrices()" style="background:#c9a84c;color:#0f1923;width:100%;padding:12px;border:none;border-radius:8px;font-weight:700;cursor:pointer;margin-bottom:8px">Guardar</button><button onclick="this.closest(\'div\').parentElement.remove()" style="background:transparent;border:1px solid #e74c3c;color:#e74c3c;width:100%;padding:10px;border-radius:8px;cursor:pointer">Cancelar</button></div>';
+    document.body.appendChild(m);
+    m.addEventListener('click',function(e){if(e.target===m)m.remove()});
 }
 
 async function savePrices(){
-    const g=parseFloat(document.getElementById('newGold').value)||72;
-    const s=parseFloat(document.getElementById('newSilver').value)||0.85;
-    const p=parseFloat(document.getElementById('newPlatinum').value)||31;
-    
-    try {
-        // Atualizar cada tipo de ouro
-        const materials = [
-            { code: 'AU24K', price: g },
-            { code: 'AU22K', price: g * 0.916 },
-            { code: 'AU20K', price: g * 0.833 },
-            { code: 'AU18K', price: g * 0.75 }
-        ];
-        
-        for (const m of materials) {
-            await fetch(API+'/api/materials/update-by-code', {
-                method:'PUT',
-                headers:{'Content-Type':'application/json','Authorization':'Bearer '+token},
-                body:JSON.stringify({code: m.code, price: m.price})
-            });
-        }
-        
-        alert('✅ Preços atualizados com sucesso!');
-        document.querySelectorAll('body>div').forEach(d=>{
-            if(d.style.position==='fixed'&&d.style.zIndex==='2000')d.remove();
-        });
-        loadStock();
-    } catch(e) {
-        alert('Erro ao atualizar preços');
-    }
+    const g=parseFloat(document.getElementById('pg').value)||72;
+    const s=parseFloat(document.getElementById('ps').value)||0.85;
+    const p=parseFloat(document.getElementById('pp').value)||31;
+    const codes=[{c:'AU24K',p:g},{c:'AU22K',p:g*0.916},{c:'AU20K',p:g*0.833},{c:'AU18K',p:g*0.75}];
+    for(const x of codes){await fetch(A+'/api/products/price',{method:'PUT',headers:{'Content-Type':'application/json','Authorization':'Bearer '+T},body:JSON.stringify({code:x.c,price:x.p})});}
+    alert('✅ Preços atualizados!');document.querySelectorAll('body>div').forEach(d=>{if(d.style.zIndex==='2000')d.remove()});stockList();
 }
 
 // TESOURARIA
-async function loadTreasury(){
-    try {
-        const res=await fetch(API+'/api/treasury',{headers:{'Authorization':'Bearer '+token}});
-        const d=await res.json();
+async function treasuryList(){
+    try{
+        const r=await fetch(A+'/api/treasury',{headers:{'Authorization':'Bearer '+T}});
+        const d=await r.json();
         document.getElementById('treasuryStats').innerHTML=
-            '<div class="stat-card"><div class="stat-value text-green">€'+d.income.toFixed(2)+'</div><div class="stat-label">Entradas</div></div>'+
-            '<div class="stat-card"><div class="stat-value text-red">€'+d.expense.toFixed(2)+'</div><div class="stat-label">Saídas</div></div>'+
-            '<div class="stat-card"><div class="stat-value">€'+d.balance.toFixed(2)+'</div><div class="stat-label">Saldo</div></div>';
-        
-        const tbody=document.querySelector('#treasuryTable tbody');
-        tbody.innerHTML=(d.transactions||[]).map(t=>
-            '<tr><td>'+new Date(t.date).toLocaleDateString('pt-PT')+'</td><td>'+t.description+'</td>'+
-            '<td><span class="badge badge-'+(t.type==='income'?'purchase':'sale')+'">'+(t.type==='income'?'Entrada':'Saída')+'</span></td>'+
-            '<td>'+t.currency+' '+parseFloat(t.amount).toFixed(2)+'</td><td>'+t.currency+'</td><td>'+t.reference+'</td></tr>'
+            '<div class="stat-card"><div class="val green">€'+d.income.toFixed(2)+'</div><div class="lbl">Entradas</div></div>'+
+            '<div class="stat-card"><div class="val red">€'+d.expense.toFixed(2)+'</div><div class="lbl">Saídas</div></div>'+
+            '<div class="stat-card"><div class="val">€'+d.balance.toFixed(2)+'</div><div class="lbl">Saldo</div></div>';
+        document.querySelector('#treasuryTbl tbody').innerHTML=(d.items||[]).map(t=>
+            '<tr><td>'+new Date(t.tdate).toLocaleDateString('pt-PT')+'</td><td>'+t.descr+'</td>'+
+            '<td><span class="badge '+(t.type==='income'?'badge-green':'badge-red')+'">'+(t.type==='income'?'Entrada':'Saída')+'</span></td>'+
+            '<td>'+t.currency+' '+parseFloat(t.amount).toFixed(2)+'</td><td>'+t.currency+'</td><td>'+t.ref+'</td></tr>'
         ).join('')||'<tr><td colspan="6">Sem movimentos</td></tr>';
-    } catch(e) { console.error(e); }
+    }catch(e){console.error(e);}
 }
 
 // CLIENTES
-async function loadClients(){
-    try {
-        const res=await fetch(API+'/api/clients',{headers:{'Authorization':'Bearer '+token}});
-        const data=await res.json();
-        const tbody=document.querySelector('#clientsTable tbody');
-        tbody.innerHTML=data.map(c=>
-            '<tr><td>'+c.name+'</td><td>'+(c.email||'-')+'</td><td>'+(c.phone||'-')+'</td><td>€'+parseFloat(c.total_purchases||0).toFixed(2)+'</td></tr>'
+async function clientList(){
+    try{
+        const r=await fetch(A+'/api/clients',{headers:{'Authorization':'Bearer '+T}});
+        const d=await r.json();
+        document.querySelector('#clientTbl tbody').innerHTML=d.map(c=>
+            '<tr><td>'+c.name+'</td><td>'+(c.email||'-')+'</td><td>'+(c.phone||'-')+'</td><td>€'+parseFloat(c.total||0).toFixed(2)+'</td></tr>'
         ).join('')||'<tr><td colspan="4">Sem clientes</td></tr>';
-    } catch(e) { console.error(e); }
+    }catch(e){console.error(e);}
 }
 
-// AUXILIARES
-async function loadMaterialsForSelect(){
-    try {
-        const res=await fetch(API+'/api/materials',{headers:{'Authorization':'Bearer '+token}});
-        const data=await res.json();
-        const sel=document.getElementById('materialId');
-        const cv=sel.value;
-        sel.innerHTML='<option value="">Selecione...</option>'+data.map(m=>'<option value="'+m.id+'">'+m.name+' ('+m.code+')</option>').join('');
-        if(cv)sel.value=cv;
-    } catch(e) { console.error(e); }
+// AUX
+async function loadProducts(){
+    try{
+        const r=await fetch(A+'/api/products',{headers:{'Authorization':'Bearer '+T}});
+        const d=await r.json();
+        const s=document.getElementById('txProduct'),cv=s.value;
+        s.innerHTML='<option value="">Selecione...</option>'+d.map(p=>'<option value="'+p.id+'">'+p.name+' ('+p.code+')</option>').join('');
+        if(cv)s.value=cv;
+    }catch(e){console.error(e);}
 }
 
-function showModal(id){
-    document.getElementById(id).classList.add('active');
-    if(id==='transactionModal'&&!document.getElementById('editId').value){
-        document.getElementById('modalTitle').textContent='Nova Transação';
-        document.getElementById('submitBtn').textContent='Registar Transação';
-        document.getElementById('transactionForm').reset();
-        document.getElementById('currency').value='EUR';
-        document.querySelectorAll('.currency-btn').forEach(b=>b.classList.remove('active'));
-        const eurBtn=document.querySelector('[data-currency="EUR"]');
-        if(eurBtn)eurBtn.classList.add('active');
-        document.getElementById('transactionDate').value=new Date().toISOString().split('T')[0];
+function openModal(id){
+    document.getElementById(id).classList.add('on');
+    if(id==='txModal'&&!document.getElementById('editId').value){
+        document.getElementById('txTitle').textContent='Nova Transação';
+        document.getElementById('txSubmit').textContent='Registar Transação';
+        document.getElementById('txForm').reset();
+        document.getElementById('txCur').value='EUR';
+        document.querySelectorAll('.cur-btn').forEach(b=>b.classList.remove('sel'));
+        const eb=document.querySelector('[data-c="EUR"]');if(eb)eb.classList.add('sel');
+        document.getElementById('txDate').value=new Date().toISOString().split('T')[0];
     }
-    if(id==='transactionModal')loadMaterialsForSelect();
+    if(id==='txModal')loadProducts();
 }
 
-function closeModal(id){
-    document.getElementById(id).classList.remove('active');
-    document.getElementById('editId').value='';
-}
+function closeModal(id){document.getElementById(id).classList.remove('on');document.getElementById('editId').value='';}
 
-// MOEDAS
-document.querySelectorAll('.currency-btn').forEach(b=>b.addEventListener('click',function(){
-    document.querySelectorAll('.currency-btn').forEach(x=>x.classList.remove('active'));
-    this.classList.add('active');
-    document.getElementById('currency').value=this.dataset.currency;
-    calcTotal();
+document.querySelectorAll('.cur-btn').forEach(b=>b.addEventListener('click',function(){
+    document.querySelectorAll('.cur-btn').forEach(x=>x.classList.remove('sel'));
+    this.classList.add('sel');document.getElementById('txCur').value=this.dataset.c;calc();
 }));
 
-['weightGrams','weightCarats','pricePerUnit'].forEach(id=>{
-    const el=document.getElementById(id);
-    if(el)el.addEventListener('input',calcTotal);
-});
+['txWg','txWct','txPrice'].forEach(id=>document.getElementById(id).addEventListener('input',calc));
+function calc(){const g=parseFloat(document.getElementById('txWg').value)||0,ct=parseFloat(document.getElementById('txWct').value)||0,pr=parseFloat(document.getElementById('txPrice').value)||0;document.getElementById('txTotal').value=((g+ct*0.2)*pr).toFixed(2);}
 
-function calcTotal(){
-    const g=parseFloat(document.getElementById('weightGrams').value)||0;
-    const ct=parseFloat(document.getElementById('weightCarats').value)||0;
-    const pr=parseFloat(document.getElementById('pricePerUnit').value)||0;
-    document.getElementById('totalPrice').value=((g+ct*0.2)*pr).toFixed(2);
-}
-
-// SUBMETER TRANSAÇÃO
-document.getElementById('transactionForm').addEventListener('submit',async(e)=>{
+// SUBMIT TRANSAÇÃO
+document.getElementById('txForm').addEventListener('submit',async(e)=>{
     e.preventDefault();
     const editId=document.getElementById('editId').value;
-    
     const body={
-        material_id:document.getElementById('materialId').value,
-        type:document.getElementById('type').value,
-        lot_number:document.getElementById('lotNumber').value,
-        weight_grams:parseFloat(document.getElementById('weightGrams').value)||0,
-        weight_carats:parseFloat(document.getElementById('weightCarats').value)||0,
-        price_per_unit:parseFloat(document.getElementById('pricePerUnit').value),
-        total_price:parseFloat(document.getElementById('totalPrice').value),
-        currency:document.getElementById('currency').value,
-        quality:document.getElementById('quality').value,
-        origin:document.getElementById('origin').value,
-        client_name:document.getElementById('clientName').value,
-        payment_method:document.getElementById('paymentMethod').value,
-        transaction_date:document.getElementById('transactionDate').value,
-        notes:document.getElementById('notes').value
+        product_id:document.getElementById('txProduct').value,
+        type:document.getElementById('txType').value,
+        lot:document.getElementById('txLot').value,
+        wg:parseFloat(document.getElementById('txWg').value)||0,
+        wct:parseFloat(document.getElementById('txWct').value)||0,
+        price_unit:parseFloat(document.getElementById('txPrice').value),
+        total:parseFloat(document.getElementById('txTotal').value),
+        currency:document.getElementById('txCur').value,
+        quality:document.getElementById('txQuality').value,
+        origin:document.getElementById('txOrigin').value,
+        client:document.getElementById('txClient').value,
+        payment:document.getElementById('txPay').value,
+        tdate:document.getElementById('txDate').value,
+        notes:document.getElementById('txNotes').value
     };
-    
-    // Validar campos obrigatórios
-    if(!body.material_id){alert('Selecione um material');return;}
-    if(!body.price_per_unit||body.price_per_unit<=0){alert('Preço por unidade é obrigatório');return;}
-    if(!body.transaction_date){alert('Data é obrigatória');return;}
-    
-    try {
-        const url=editId?API+'/api/transactions/'+editId:API+'/api/transactions';
+    if(!body.product_id){alert('Selecione um material');return;}
+    if(!body.price_unit||body.price_unit<=0){alert('Preço por unidade obrigatório');return;}
+    if(!body.tdate){alert('Data obrigatória');return;}
+    try{
+        const url=editId?A+'/api/transactions/'+editId:A+'/api/transactions';
         const method=editId?'PUT':'POST';
-        
-        const res=await fetch(url,{
-            method,
-            headers:{'Content-Type':'application/json','Authorization':'Bearer '+token},
-            body:JSON.stringify(body)
-        });
-        
-        if(res.ok){
-            const data=await res.json();
-            alert('✅ '+(editId?'Transação atualizada!':'Transação registada!\n\nCódigo: '+data.code+'\nLote: '+data.lot));
-            closeModal('transactionModal');
-            loadDashboard();
-            loadTransactions();
-        } else {
-            const err=await res.json();
-            alert('❌ Erro: '+(err.error||'Erro ao registar'));
-        }
-    } catch(err) {
-        alert('Erro de conexão. Verifique sua internet.');
-    }
+        const r=await fetch(url,{method,headers:{'Content-Type':'application/json','Authorization':'Bearer '+T},body:JSON.stringify(body)});
+        if(r.ok){
+            const d=await r.json();
+            alert('✅ '+(editId?'Atualizada!':'Registada!\n\nCódigo: '+d.code+'\nLote: '+d.lot));
+            closeModal('txModal');dash();txList();
+        }else{const e=await r.json();alert('❌ '+(e.error||'Erro'));}
+    }catch(err){alert('Erro de conexão');}
 });
 
-// SUBMETER CLIENTE
+// SUBMIT CLIENTE
 document.getElementById('clientForm').addEventListener('submit',async(e)=>{
     e.preventDefault();
-    try {
-        const res=await fetch(API+'/api/clients',{
-            method:'POST',
-            headers:{'Content-Type':'application/json','Authorization':'Bearer '+token},
-            body:JSON.stringify({
-                name:document.getElementById('newClientName').value,
-                email:document.getElementById('newClientEmail').value,
-                phone:document.getElementById('newClientPhone').value,
-                address:document.getElementById('newClientAddress').value,
-                nif:document.getElementById('newClientNif').value
-            })
-        });
-        if(res.ok){
-            alert('✅ Cliente guardado!');
-            closeModal('clientModal');
-            loadClients();
-        } else {
-            alert('Erro ao guardar cliente');
-        }
-    } catch(err) {
-        alert('Erro de conexão');
-    }
+    try{
+        const r=await fetch(A+'/api/clients',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+T},body:JSON.stringify({name:document.getElementById('cName').value,email:document.getElementById('cEmail').value,phone:document.getElementById('cPhone').value,address:document.getElementById('cAddr').value,nif:document.getElementById('cNif').value})});
+        if(r.ok){alert('✅ Cliente guardado!');closeModal('clientModal');clientList();}
+    }catch(err){alert('Erro');}
 });
 
-// INICIAR
-if(token){
-    document.getElementById('loginScreen').style.display='none';
-    document.getElementById('appScreen').style.display='block';
-    loadDashboard();
-}
+// INIT
+if(T){document.getElementById('loginScreen').style.display='none';document.getElementById('appScreen').style.display='block';dash();}
 </script>
 </body>
 </html>
