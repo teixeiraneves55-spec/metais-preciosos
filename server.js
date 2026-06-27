@@ -23,15 +23,25 @@ const rates = { EUR: 1, USD: 1.08, FCFA: 655.96 };
 async function init() {
   const c = await pool.connect();
   try {
-    await c.query(`CREATE TABLE IF NOT EXISTS users (id SERIAL PRIMARY KEY, name TEXT, email TEXT UNIQUE, password TEXT, role TEXT DEFAULT 'user')`);
-    await c.query(`CREATE TABLE IF NOT EXISTS products (id SERIAL PRIMARY KEY, code TEXT UNIQUE, name TEXT, type TEXT, subtype TEXT, stock_g DECIMAL(10,3) DEFAULT 0, stock_ct DECIMAL(10,3) DEFAULT 0, unit TEXT DEFAULT 'g', price_eur DECIMAL(10,2) DEFAULT 0)`);
-    await c.query(`CREATE TABLE IF NOT EXISTS transactions (id SERIAL PRIMARY KEY, code TEXT UNIQUE, lot TEXT, product_id INTEGER, type TEXT, wg DECIMAL(10,3) DEFAULT 0, wct DECIMAL(10,3) DEFAULT 0, price_unit DECIMAL(10,2), total DECIMAL(12,2), currency TEXT DEFAULT 'EUR', total_eur DECIMAL(12,2), quality TEXT, origin TEXT, client TEXT, payment TEXT, notes TEXT, tdate DATE, created TIMESTAMP DEFAULT NOW())`);
-    await c.query(`CREATE TABLE IF NOT EXISTS clients (id SERIAL PRIMARY KEY, name TEXT, email TEXT, phone TEXT, address TEXT, nif TEXT, total DECIMAL(12,2) DEFAULT 0)`);
-    await c.query(`CREATE TABLE IF NOT EXISTS treasury (id SERIAL PRIMARY KEY, tdate DATE, descr TEXT, type TEXT, amount DECIMAL(12,2), currency TEXT DEFAULT 'EUR', amount_eur DECIMAL(12,2), ref TEXT)`);
+    // Remover tabelas antigas
+    await c.query(`DROP TABLE IF EXISTS transactions CASCADE`);
+    await c.query(`DROP TABLE IF EXISTS treasury CASCADE`);
+    await c.query(`DROP TABLE IF EXISTS products CASCADE`);
+    await c.query(`DROP TABLE IF EXISTS clients CASCADE`);
+    await c.query(`DROP TABLE IF EXISTS users CASCADE`);
 
+    // Criar tabelas novas
+    await c.query(`CREATE TABLE users (id SERIAL PRIMARY KEY, name TEXT, email TEXT UNIQUE, password TEXT, role TEXT DEFAULT 'user')`);
+    await c.query(`CREATE TABLE products (id SERIAL PRIMARY KEY, code TEXT UNIQUE, name TEXT, type TEXT, subtype TEXT, stock_g DECIMAL(10,3) DEFAULT 0, stock_ct DECIMAL(10,3) DEFAULT 0, unit TEXT DEFAULT 'g', price_eur DECIMAL(10,2) DEFAULT 0)`);
+    await c.query(`CREATE TABLE clients (id SERIAL PRIMARY KEY, name TEXT, email TEXT, phone TEXT, address TEXT, nif TEXT, total DECIMAL(12,2) DEFAULT 0)`);
+    await c.query(`CREATE TABLE transactions (id SERIAL PRIMARY KEY, code TEXT UNIQUE, lot TEXT, product_id INTEGER, type TEXT, wg DECIMAL(10,3) DEFAULT 0, wct DECIMAL(10,3) DEFAULT 0, price_unit DECIMAL(10,2), total DECIMAL(12,2), currency TEXT DEFAULT 'EUR', total_eur DECIMAL(12,2), quality TEXT, origin TEXT, client TEXT, payment TEXT, notes TEXT, tdate DATE, created TIMESTAMP DEFAULT NOW())`);
+    await c.query(`CREATE TABLE treasury (id SERIAL PRIMARY KEY, tdate DATE, descr TEXT, type TEXT, amount DECIMAL(12,2), currency TEXT DEFAULT 'EUR', amount_eur DECIMAL(12,2), ref TEXT)`);
+
+    // Admin
     const pw = await bcrypt.hash('Admin123!', 10);
-    await c.query('INSERT INTO users (name,email,password,role) VALUES ($1,$2,$3,$4) ON CONFLICT(email) DO NOTHING', ['Admin','admin@metaispreciosos.pt',pw,'admin']);
+    await c.query('INSERT INTO users (name,email,password,role) VALUES ($1,$2,$3,$4)', ['Admin','admin@metaispreciosos.pt',pw,'admin']);
 
+    // Produtos
     const prods = [
       ['AU24K','Ouro 24K','metal','Ouro','g',72],
       ['AU22K','Ouro 22K','metal','Ouro','g',66],
@@ -43,9 +53,9 @@ async function init() {
       ['DIA02','Diamante 0.5ct','gem','Diamante','ct',2000]
     ];
     for (const p of prods) {
-      await c.query('INSERT INTO products (code,name,type,subtype,unit,price_eur) VALUES ($1,$2,$3,$4,$5,$6) ON CONFLICT(code) DO UPDATE SET price_eur=$6', p);
+      await c.query('INSERT INTO products (code,name,type,subtype,unit,price_eur) VALUES ($1,$2,$3,$4,$5,$6)', p);
     }
-    console.log('DB OK');
+    console.log('DB OK - Tabelas recriadas');
   } finally { c.release(); }
 }
 
@@ -71,7 +81,6 @@ function auth(req, res, next) {
 
 app.get('/api/rates', auth, (req, res) => res.json(rates));
 
-// PRODUTOS
 app.get('/api/products', auth, async (req, res) => {
   const r = await pool.query('SELECT * FROM products ORDER BY name');
   res.json(r.rows);
@@ -89,7 +98,6 @@ app.put('/api/products/price', auth, async (req, res) => {
   res.json({ ok: true });
 });
 
-// DASHBOARD
 app.get('/api/dashboard', auth, async (req, res) => {
   const pc = await pool.query('SELECT COUNT(*) as c FROM products');
   const ms = new Date(); ms.setDate(1); ms.setHours(0,0,0,0);
@@ -99,16 +107,9 @@ app.get('/api/dashboard', auth, async (req, res) => {
   const rr = await pool.query("SELECT t.*, p.name as pname FROM transactions t JOIN products p ON t.product_id=p.id ORDER BY t.created DESC LIMIT 10");
   const inc = parseFloat(tr.rows.find(r => r.type === 'income')?.t || 0);
   const exp = parseFloat(tr.rows.find(r => r.type === 'expense')?.t || 0);
-  res.json({
-    items: parseInt(pc.rows[0].c),
-    purchases: parseFloat(mr.rows.find(r => r.type === 'purchase')?.t || 0),
-    sales: parseFloat(mr.rows.find(r => r.type === 'sale')?.t || 0),
-    balance: inc - exp,
-    recent: rr.rows
-  });
+  res.json({ items: parseInt(pc.rows[0].c), purchases: parseFloat(mr.rows.find(r => r.type === 'purchase')?.t || 0), sales: parseFloat(mr.rows.find(r => r.type === 'sale')?.t || 0), balance: inc - exp, recent: rr.rows });
 });
 
-// TRANSAÇÕES
 app.get('/api/transactions', auth, async (req, res) => {
   const r = await pool.query("SELECT t.*, p.name as pname, p.code as pcode FROM transactions t JOIN products p ON t.product_id=p.id ORDER BY t.tdate DESC, t.created DESC LIMIT 500");
   res.json(r.rows);
@@ -214,7 +215,6 @@ app.delete('/api/transactions/:id', auth, async (req, res) => {
   finally { cl.release(); }
 });
 
-// TESOURARIA
 app.get('/api/treasury', auth, async (req, res) => {
   const r = await pool.query('SELECT * FROM treasury ORDER BY tdate DESC, id DESC LIMIT 300');
   const s = await pool.query('SELECT type, COALESCE(SUM(amount_eur),0) as t FROM treasury GROUP BY type');
@@ -223,7 +223,6 @@ app.get('/api/treasury', auth, async (req, res) => {
   res.json({ items: r.rows, income: inc, expense: exp, balance: inc - exp });
 });
 
-// CLIENTES
 app.get('/api/clients', auth, async (req, res) => {
   const r = await pool.query('SELECT * FROM clients ORDER BY name');
   res.json(r.rows);
@@ -235,7 +234,6 @@ app.post('/api/clients', auth, async (req, res) => {
   res.status(201).json(r.rows[0]);
 });
 
-// STOCK VALUE
 app.get('/api/stock', auth, async (req, res) => {
   const r = await pool.query('SELECT * FROM products ORDER BY name');
   const items = r.rows.map(p => {
